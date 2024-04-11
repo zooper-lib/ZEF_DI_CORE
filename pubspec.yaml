@@ -12,7 +12,7 @@ funding:
   - https://buymeacoffee.com/zooperlib
 
 environment:
-  sdk: ^3.3.3
+  sdk: ^3.0.5
 
 dependencies:
   any_of: ^2.0.0
