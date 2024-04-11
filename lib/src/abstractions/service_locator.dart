@@ -1,6 +1,7 @@
 import 'package:zef_di_core/src/abstractions/service_locator_adapter.dart';
 import 'package:zef_di_core/src/helpers/service_locator_config.dart';
-import 'package:zef_di_core/src/implementations/concrete_service_locator.dart';
+import 'package:zef_di_core/src/implementations/internal_service_locator.dart';
+import 'package:zef_di_core/src/implementations/internal_service_locator_adapter.dart';
 import 'package:zef_helpers_lazy/zef_helpers_lazy.dart';
 
 /// Central management hub for dependencies and service instances within a dependency injection (DI) framework.
@@ -379,8 +380,8 @@ abstract class ServiceLocator {
 /// sequential and readable approach to configuring the [ServiceLocator], ensuring that all necessary
 /// components and settings are specified before the [ServiceLocator] is instantiated.
 class ServiceLocatorBuilder {
-  ServiceLocatorAdapter? _adapter;
-  ServiceLocatorConfig? _config;
+  ServiceLocatorAdapter _adapter = InternalServiceLocatorAdapter();
+  ServiceLocatorConfig _config = ServiceLocatorConfig();
 
   /// Specifies the adapter to be used by the [ServiceLocator].
   ///
@@ -419,8 +420,6 @@ class ServiceLocatorBuilder {
   ///
   /// Throws [StateError] if the [ServiceLocator] has already been initialized, enforcing the singleton pattern
   /// and preventing multiple instances of the [ServiceLocator].
-  /// Throws [StateError] if no adapter has been provided, as the adapter is essential for the [ServiceLocator]'s
-  /// functionality and must be defined prior to building.
   void build() {
     if (ServiceLocator._instance != null) {
       throw StateError(
@@ -428,14 +427,7 @@ class ServiceLocatorBuilder {
       );
     }
 
-    if (_adapter == null) {
-      throw StateError(
-        'A $ServiceLocatorAdapter must be provided before building the $ServiceLocator.',
-      );
-    }
-
     // Assigns the newly configured ServiceLocator instance to its singleton reference.
-    ServiceLocator._instance =
-        ConcreteServiceLocator(adapter: _adapter!, config: _config);
+    ServiceLocator._instance = InternalServiceLocator(adapter: _adapter, config: _config);
   }
 }

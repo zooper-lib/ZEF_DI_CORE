@@ -5,8 +5,8 @@ import 'package:zef_di_core/src/helpers/user_messages.dart';
 import 'package:zef_helpers_lazy/zef_helpers_lazy.dart';
 import 'package:zef_log_core/zef_log_core.dart';
 
-class ConcreteServiceLocator implements ServiceLocator {
-  ConcreteServiceLocator({
+class InternalServiceLocator implements ServiceLocator {
+  InternalServiceLocator({
     required ServiceLocatorAdapter adapter,
     ServiceLocatorConfig? config,
   })  : _adapter = adapter,
