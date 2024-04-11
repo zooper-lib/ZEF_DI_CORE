@@ -1,5 +1,5 @@
-import 'package:zef_di_abstractions/zef_di_abstractions.dart';
 import 'package:any_of/any_of.dart';
+import 'package:zef_di_core/src/abstractions/service_locator.dart';
 import 'package:zef_helpers_lazy/zef_helpers_lazy.dart';
 
 abstract class ServiceLocatorAdapter {

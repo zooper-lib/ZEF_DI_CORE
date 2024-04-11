@@ -1,7 +1,7 @@
-import 'package:zef_di_abstractions/zef_di_abstractions.dart';
+import 'package:zef_di_core/src/abstractions/service_locator_adapter.dart';
+import 'package:zef_di_core/src/helpers/service_locator_config.dart';
+import 'package:zef_di_core/src/implementations/concrete_service_locator.dart';
 import 'package:zef_helpers_lazy/zef_helpers_lazy.dart';
-
-import 'concrete_service_locator.dart';
 
 /// Central management hub for dependencies and service instances within a dependency injection (DI) framework.
 ///
@@ -30,7 +30,8 @@ abstract class ServiceLocator {
   static ServiceLocator get instance {
     if (_instance == null) {
       throw StateError(
-          '$ServiceLocator must be initialized using the $ServiceLocatorBuilder before accessing the instance.');
+        '$ServiceLocator must be initialized using the $ServiceLocatorBuilder before accessing the instance.',
+      );
     }
     return _instance!;
   }
@@ -423,12 +424,14 @@ class ServiceLocatorBuilder {
   void build() {
     if (ServiceLocator._instance != null) {
       throw StateError(
-          '$ServiceLocator has already been initialized and cannot be configured again.');
+        '$ServiceLocator has already been initialized and cannot be configured again.',
+      );
     }
 
     if (_adapter == null) {
       throw StateError(
-          'A $ServiceLocatorAdapter must be provided before building the $ServiceLocator.');
+        'A $ServiceLocatorAdapter must be provided before building the $ServiceLocator.',
+      );
     }
 
     // Assigns the newly configured ServiceLocator instance to its singleton reference.
