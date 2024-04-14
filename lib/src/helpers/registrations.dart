@@ -45,7 +45,7 @@ abstract class Registration<T extends Object> {
     required dynamic key,
     required String? environment,
   }) {
-    return SingletonRegistration(
+    return SyncSingletonRegistration(
       instance: instance,
       interfaces: interfaces,
       name: name,
@@ -57,7 +57,7 @@ abstract class Registration<T extends Object> {
   /// Creates a factory registration with the specified details.
   ///
   /// A factory registration uses the provided factory function to create a new instance of the service each time it is resolved.
-  factory Registration.factory({
+  factory Registration.transient({
     required T Function(
       ServiceLocator serviceLocator,
       Map<String, dynamic> namedArgs,
@@ -67,7 +67,7 @@ abstract class Registration<T extends Object> {
     required dynamic key,
     required String? environment,
   }) {
-    return FactoryRegistration(
+    return SyncTransientRegistration(
       factory: factory,
       interfaces: interfaces,
       name: name,
@@ -89,25 +89,45 @@ abstract class Registration<T extends Object> {
             )>
         newValue,
   ) {
-    if (registration is SingletonRegistration) {
-      return SingletonRegistration.from(registration, newValue.first);
-    } else if (registration is FactoryRegistration) {
-      return FactoryRegistration.from(registration, newValue.second);
+    if (registration is SyncSingletonRegistration) {
+      return SyncSingletonRegistration.from(registration, newValue.first);
+    } else if (registration is SyncTransientRegistration) {
+      return SyncTransientRegistration.from(registration, newValue.second);
     }
 
     throw StateError('Unknown registration type');
   }
 }
 
+mixin AsyncRegistration<T extends Object> on Registration<T> {}
+
+mixin AsyncSimpleRegistration<T extends Object> on Registration<T> implements AsyncRegistration<T> {
+  Future<T> resolve(ServiceLocator serviceLocator);
+}
+
+mixin AsyncParameterizedRegistration<T extends Object> on Registration<T> implements AsyncRegistration<T> {
+  Future<T> resolve(ServiceLocator serviceLocator, Map<String, dynamic> namedArgs);
+}
+
+mixin SyncRegistration<T extends Object> on Registration<T> {}
+
+mixin SyncSimpleRegistration<T extends Object> on Registration<T> implements SyncRegistration<T> {
+  T resolve(ServiceLocator serviceLocator);
+}
+
+mixin SyncParameterizedRegistration<T extends Object> on Registration<T> implements SyncRegistration<T> {
+  T resolve(ServiceLocator serviceLocator, Map<String, dynamic> namedArgs);
+}
+
 /// A concrete implementation of [Registration] for singleton services.
 ///
 /// This registration type ensures that a single instance of the service is used throughout the application.
-class SingletonRegistration<T extends Object> extends Registration<T> {
+class SyncSingletonRegistration<T extends Object> extends Registration<T> with SyncSimpleRegistration<T> {
   /// The singleton instance of the service.
   final T _instance;
 
   /// Creates a singleton registration with the specified instance and details.
-  SingletonRegistration({
+  SyncSingletonRegistration({
     required T instance,
     required super.interfaces,
     required super.name,
@@ -115,9 +135,9 @@ class SingletonRegistration<T extends Object> extends Registration<T> {
     required super.environment,
   }) : _instance = instance;
 
-  /// Creates a new [SingletonRegistration] from an existing registration, replacing the instance with [newInstance].
-  factory SingletonRegistration.from(SingletonRegistration registration, T newInstance) {
-    return SingletonRegistration(
+  /// Creates a new [SyncSingletonRegistration] from an existing registration, replacing the instance with [newInstance].
+  factory SyncSingletonRegistration.from(SyncSingletonRegistration registration, T newInstance) {
+    return SyncSingletonRegistration(
       instance: newInstance,
       interfaces: registration.interfaces,
       name: registration.name,
@@ -127,41 +147,36 @@ class SingletonRegistration<T extends Object> extends Registration<T> {
   }
 
   /// Returns the singleton instance of the service.
+  @override
   T resolve(ServiceLocator serviceLocator) => _instance;
 }
 
-/// A concrete implementation of [Registration] for services that are created using a factory function.
-///
-/// This registration type allows for a new instance of the service to be created each time it is resolved.
-class FactoryRegistration<T extends Object> extends Registration<T> {
-  /// The factory function used to create new instances of the service.
-  final T Function(
+class AsyncTransientRegistration<T extends Object> extends Registration<T> with AsyncParameterizedRegistration<T> {
+  final Future<T> Function(
     ServiceLocator serviceLocator,
     Map<String, dynamic> namedArgs,
   ) _factory;
 
-  /// Creates a factory registration with the specified factory function and details.
-  FactoryRegistration({
-    required T Function(ServiceLocator, Map<String, dynamic> namedArgs) factory,
+  AsyncTransientRegistration({
+    required Future<T> Function(ServiceLocator, Map<String, dynamic> namedArgs) factory,
     required super.interfaces,
     required super.name,
     required super.key,
     required super.environment,
   }) : _factory = factory;
 
-  T resolve(ServiceLocator serviceLocator, Map<String, dynamic> namedArgs) {
-    // Invoke the factory function with both the service locator and optional named parameters
+  @override
+  Future<T> resolve(ServiceLocator serviceLocator, Map<String, dynamic> namedArgs) {
     return _factory(serviceLocator, namedArgs);
   }
 
-  /// Creates a new [FactoryRegistration] from an existing registration, replacing the factory function with [newFactory].
-  factory FactoryRegistration.from(
-      FactoryRegistration registration,
-      T Function(
+  factory AsyncTransientRegistration.from(
+      AsyncTransientRegistration registration,
+      Future<T> Function(
         ServiceLocator serviceLocator,
         Map<String, dynamic> namedArgs,
       ) newFactory) {
-    return FactoryRegistration(
+    return AsyncTransientRegistration(
       factory: newFactory,
       interfaces: registration.interfaces,
       name: registration.name,
@@ -171,10 +186,55 @@ class FactoryRegistration<T extends Object> extends Registration<T> {
   }
 }
 
-class LazyRegistration<T extends Object> extends Registration<T> {
+/// A concrete implementation of [Registration] for transient services.
+///
+/// This registration type allows for a new instance of the service to be created each time it is resolved.
+class SyncTransientRegistration<T extends Object> extends Registration<T> with SyncParameterizedRegistration<T> {
+  /// The factory function used to create new instances of the service.
+  final T Function(
+    ServiceLocator serviceLocator,
+    Map<String, dynamic> namedArgs,
+  ) _factory;
+
+  /// Creates a factory registration with the specified factory function and details.
+  SyncTransientRegistration({
+    required T Function(ServiceLocator, Map<String, dynamic> namedArgs) factory,
+    required super.interfaces,
+    required super.name,
+    required super.key,
+    required super.environment,
+  }) : _factory = factory;
+
+  @override
+  T resolve(ServiceLocator serviceLocator, Map<String, dynamic> namedArgs) {
+    // Invoke the factory function with both the service locator and optional named parameters
+    return _factory(serviceLocator, namedArgs);
+  }
+
+  /// Creates a new [SyncTransientRegistration] from an existing registration, replacing the factory function with [newFactory].
+  factory SyncTransientRegistration.from(
+      SyncTransientRegistration registration,
+      T Function(
+        ServiceLocator serviceLocator,
+        Map<String, dynamic> namedArgs,
+      ) newFactory) {
+    return SyncTransientRegistration(
+      factory: newFactory,
+      interfaces: registration.interfaces,
+      name: registration.name,
+      key: registration.key,
+      environment: registration.environment,
+    );
+  }
+}
+
+/// A concrete implementation of [Registration] for lazy services.
+///
+/// This registration type allows for a lazy instance to be created each time it is resolved.
+class SyncLazyRegistration<T extends Object> extends Registration<T> with SyncSimpleRegistration<T> {
   final Lazy<T> lazyInstance;
 
-  LazyRegistration({
+  SyncLazyRegistration({
     required this.lazyInstance,
     required super.interfaces,
     required super.name,
@@ -182,6 +242,7 @@ class LazyRegistration<T extends Object> extends Registration<T> {
     required super.environment,
   }) : super();
 
+  @override
   T resolve(ServiceLocator serviceLocator) {
     return lazyInstance.value;
   }

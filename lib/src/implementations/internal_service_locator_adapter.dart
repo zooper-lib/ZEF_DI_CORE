@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:any_of/any_of.dart';
 import 'package:zef_di_core/src/helpers/registrations.dart';
 import 'package:zef_di_core/zef_di_core.dart';
@@ -7,7 +9,28 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   final Map<Type, Set<Registration>> _registrations = {};
 
   @override
-  Triplet<Success, Conflict, InternalError> registerSingleton<T extends Object>(
+  Future<Triplet<Success, Conflict, InternalError>> registerSingleton<T extends Object>(
+    T instance, {
+    required Set<Type>? interfaces,
+    required String? name,
+    required dynamic key,
+    required String? environment,
+    required bool allowMultipleInstances,
+  }) {
+    return Future.value(
+      registerSingletonSync(
+        instance,
+        interfaces: interfaces,
+        name: name,
+        key: key,
+        environment: environment,
+        allowMultipleInstances: allowMultipleInstances,
+      ),
+    );
+  }
+
+  @override
+  Triplet<Success, Conflict, InternalError> registerSingletonSync<T extends Object>(
     T instance, {
     required Set<Type>? interfaces,
     required String? name,
@@ -29,7 +52,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
     }
 
     // Create a registration
-    var registration = SingletonRegistration<T>(
+    var registration = SyncSingletonRegistration<T>(
       instance: instance,
       interfaces: interfaces,
       name: name,
@@ -45,7 +68,41 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }
 
   @override
-  Triplet<Success, Conflict, InternalError> registerTransient<T extends Object>(
+  Future<Triplet<Success, Conflict, InternalError>> registerTransient<T extends Object>(
+    Future<T> Function(
+      ServiceLocator serviceLocator,
+      Map<String, dynamic> namedArgs,
+    ) factory, {
+    required Set<Type>? interfaces,
+    required String? name,
+    required dynamic key,
+    required String? environment,
+    required bool allowMultipleInstances,
+  }) async {
+    if (allowMultipleInstances == false && _isInstanceRegistered(T, name: name, key: key, environment: environment)) {
+      return Triplet.second(
+        Conflict('Registration already exists for type $T. Skipping registration.'),
+      );
+    }
+
+    // Create a registration
+    var registration = AsyncTransientRegistration<T>(
+      factory: factory,
+      interfaces: interfaces,
+      name: name,
+      key: key,
+      environment: environment,
+    );
+
+    // Register the instance
+    _registrations[T] ??= {};
+    _registrations[T]!.add(registration);
+
+    return Triplet.first(Success());
+  }
+
+  @override
+  Triplet<Success, Conflict, InternalError> registerTransientSync<T extends Object>(
     T Function(
       ServiceLocator serviceLocator,
       Map<String, dynamic> namedArgs,
@@ -63,7 +120,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
     }
 
     // Create a registration
-    var registration = FactoryRegistration<T>(
+    var registration = SyncTransientRegistration<T>(
       factory: factory,
       interfaces: interfaces,
       name: name,
@@ -79,7 +136,28 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }
 
   @override
-  Triplet<Success, Conflict, InternalError> registerLazy<T extends Object>(
+  Future<Triplet<Success, Conflict, InternalError>> registerLazy<T extends Object>(
+    Lazy<T> lazyInstance, {
+    required Set<Type>? interfaces,
+    required String? name,
+    required dynamic key,
+    required String? environment,
+    required bool allowMultipleInstances,
+  }) {
+    return Future.value(
+      registerLazySync(
+        lazyInstance,
+        interfaces: interfaces,
+        name: name,
+        key: key,
+        environment: environment,
+        allowMultipleInstances: allowMultipleInstances,
+      ),
+    );
+  }
+
+  @override
+  Triplet<Success, Conflict, InternalError> registerLazySync<T extends Object>(
     Lazy<T> lazyInstance, {
     required Set<Type>? interfaces,
     required String? name,
@@ -100,7 +178,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
       );
     }
 
-    var registration = LazyRegistration<T>(
+    var registration = SyncLazyRegistration<T>(
       lazyInstance: lazyInstance,
       interfaces: interfaces,
       name: name,
@@ -116,7 +194,36 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }
 
   @override
-  Triplet<T, NotFound, InternalError> resolve<T extends Object>({
+  Future<Triplet<T, NotFound, InternalError>> resolve<T extends Object>({
+    required String? name,
+    required key,
+    required String? environment,
+    required Map<String, dynamic> namedArgs,
+    required bool resolveFirst,
+  }) async {
+    // Filter the registrations
+    var matchedRegistrations = _filterRegistrations<T>(
+      name: name,
+      key: key,
+      environment: environment,
+    );
+
+    // Check if there are any registrations
+    if (matchedRegistrations.isEmpty) {
+      return Triplet.second(NotFound('No registration found for type $T.'));
+    }
+
+    // Get the first registration
+    final registration = matchedRegistrations.first;
+
+    // Create the instance based on the type of registration
+    final instance = _resolveRegistration<T>(registration, namedArgs);
+
+    return Triplet.first(instance);
+  }
+
+  @override
+  Triplet<T, NotFound, InternalError> resolveSync<T extends Object>({
     required String? name,
     required key,
     required String? environment,
@@ -145,7 +252,45 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }
 
   @override
-  Triplet<Set<T>, NotFound, InternalError> resolveAll<T extends Object>({
+  Future<Triplet<Set<T>, NotFound, InternalError>> resolveAll<T extends Object>({
+    required String? name,
+    required key,
+    required String? environment,
+    required Map<String, dynamic> namedArgs,
+  }) async {
+    // Filter the registrations
+    var matchedRegistrations = _filterRegistrations<T>(
+      name: name,
+      key: key,
+      environment: environment,
+    );
+
+    // Check if there are any registrations
+    if (matchedRegistrations.isEmpty) {
+      return Triplet.second(NotFound('No registration found for type $T.'));
+    }
+
+    // Resolve the instances
+    final resolvedInstances = <T>{};
+    for (final registration in matchedRegistrations) {
+      if (registration is AsyncSimpleRegistration<T>) {
+        resolvedInstances.add(await registration.resolve(ServiceLocator.I));
+      } else if (registration is AsyncParameterizedRegistration<T>) {
+        resolvedInstances.add(await registration.resolve(ServiceLocator.I, namedArgs));
+      } else if (registration is SyncSimpleRegistration<T>) {
+        resolvedInstances.add(registration.resolve(ServiceLocator.I));
+      } else if (registration is SyncParameterizedRegistration<T>) {
+        resolvedInstances.add(registration.resolve(ServiceLocator.I, namedArgs));
+      } else {
+        throw Exception("Unsupported registration type for $T");
+      }
+    }
+
+    return Triplet.first(resolvedInstances);
+  }
+
+  @override
+  Triplet<Set<T>, NotFound, InternalError> resolveAllSync<T extends Object>({
     required String? name,
     required key,
     required String? environment,
@@ -164,23 +309,43 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
     }
 
     // Resolve the instances
-    var resolvedInstances = matchedRegistrations.map((registration) {
-      if (registration is FactoryRegistration<T>) {
-        // For factory registrations, pass the named arguments
-        return registration.resolve(ServiceLocator.I, namedArgs);
-      } else if (registration is SingletonRegistration<T>) {
-        // For singleton registrations, ignore the named arguments
-        return registration.resolve(ServiceLocator.I);
+    final resolvedInstances = <T>{};
+    for (final registration in matchedRegistrations) {
+      if (registration is AsyncSimpleRegistration<T>) {
+        registration.resolve(ServiceLocator.I).then((value) => resolvedInstances.add(value));
+      } else if (registration is AsyncParameterizedRegistration<T>) {
+        registration.resolve(ServiceLocator.I, namedArgs).then((value) => resolvedInstances.add(value));
+      } else if (registration is SyncSimpleRegistration<T>) {
+        resolvedInstances.add(registration.resolve(ServiceLocator.I));
+      } else if (registration is SyncParameterizedRegistration<T>) {
+        resolvedInstances.add(registration.resolve(ServiceLocator.I, namedArgs));
       } else {
         throw Exception("Unsupported registration type for $T");
       }
-    }).toSet();
+    }
 
     return Triplet.first(resolvedInstances);
   }
 
   @override
-  Doublet<Success, InternalError> overrideWithSingleton<T extends Object>(
+  Future<Doublet<Success, InternalError>> overrideWithSingleton<T extends Object>(
+    T instance, {
+    required String? name,
+    required key,
+    required String? environment,
+  }) {
+    return Future.value(
+      overrideWithSingletonSync(
+        instance,
+        name: name,
+        key: key,
+        environment: environment,
+      ),
+    );
+  }
+
+  @override
+  Doublet<Success, InternalError> overrideWithSingletonSync<T extends Object>(
     T instance, {
     required String? name,
     required key,
@@ -197,7 +362,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
     _registrations[T]?.remove(registration);
 
     // Register the new Singleton
-    registerSingleton(
+    registerSingletonSync(
       instance,
       interfaces: null,
       name: name,
@@ -210,7 +375,27 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }
 
   @override
-  Doublet<Success, InternalError> overrideWithTransient<T extends Object>(
+  Future<Doublet<Success, InternalError>> overrideWithTransient<T extends Object>(
+    Future<T> Function(
+      ServiceLocator serviceLocator,
+      Map<String, dynamic> namedArgs,
+    ) factory, {
+    required String? name,
+    required key,
+    required String? environment,
+  }) {
+    return Future.value(
+      overrideWithTransientSync(
+        factory,
+        name: name,
+        key: key,
+        environment: environment,
+      ),
+    );
+  }
+
+  @override
+  Doublet<Success, InternalError> overrideWithTransientSync<T extends Object>(
     T Function(
       ServiceLocator serviceLocator,
       Map<String, dynamic> namedArgs,
@@ -230,7 +415,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
     _registrations[T]?.remove(registration);
 
     // Add the new registration
-    registerTransient(
+    registerTransientSync(
       factory,
       interfaces: null,
       name: name,
@@ -243,7 +428,24 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }
 
   @override
-  Doublet<Success, InternalError> overrideWithLazy<T extends Object>(
+  Future<Doublet<Success, InternalError>> overrideWithLazy<T extends Object>(
+    Lazy<T> lazyInstance, {
+    required String? name,
+    required key,
+    required String? environment,
+  }) {
+    return Future.value(
+      overrideWithLazySync(
+        lazyInstance,
+        name: name,
+        key: key,
+        environment: environment,
+      ),
+    );
+  }
+
+  @override
+  Doublet<Success, InternalError> overrideWithLazySync<T extends Object>(
     Lazy<T> lazyInstance, {
     required String? name,
     required key,
@@ -260,7 +462,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
     _registrations[T]?.remove(registration);
 
     // Add the new registration
-    registerLazy(
+    registerLazySync(
       lazyInstance,
       interfaces: null,
       name: name,
@@ -273,7 +475,22 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }
 
   @override
-  Triplet<Success, NotFound, InternalError> unregister<T extends Object>({
+  Future<Triplet<Success, NotFound, InternalError>> unregister<T extends Object>({
+    required String? name,
+    required key,
+    required String? environment,
+  }) {
+    return Future.value(
+      unregisterSync(
+        name: name,
+        key: key,
+        environment: environment,
+      ),
+    );
+  }
+
+  @override
+  Triplet<Success, NotFound, InternalError> unregisterSync<T extends Object>({
     required String? name,
     required key,
     required String? environment,
@@ -286,7 +503,14 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }
 
   @override
-  Doublet<Success, InternalError> unregisterAll() {
+  Future<Doublet<Success, InternalError>> unregisterAll() {
+    return Future.value(
+      unregisterAllSync(),
+    );
+  }
+
+  @override
+  Doublet<Success, InternalError> unregisterAllSync() {
     _registrations.clear();
 
     return Doublet.first(Success());
@@ -374,11 +598,11 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }
 
   T _resolveRegistration<T extends Object>(Registration<T> registration, Map<String, dynamic> namedArgs) {
-    if (registration is FactoryRegistration<T>) {
+    if (registration is SyncTransientRegistration<T>) {
       return registration.resolve(ServiceLocator.I, namedArgs);
-    } else if (registration is SingletonRegistration<T>) {
+    } else if (registration is SyncSingletonRegistration<T>) {
       return registration.resolve(ServiceLocator.I);
-    } else if (registration is LazyRegistration<T>) {
+    } else if (registration is SyncLazyRegistration<T>) {
       return registration.resolve(ServiceLocator.I);
     } else {
       throw Exception("Unsupported registration type for type $T.");

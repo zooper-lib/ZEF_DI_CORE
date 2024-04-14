@@ -17,36 +17,36 @@ void main() {
   });
 
   tearDown(() {
-    ServiceLocator.I.unregisterAll();
+    ServiceLocator.I.unregisterAllSync();
   });
 
   group('Combined Registrations |', () {
     test('Singleton, Transient, and Lazy | Mix Registration Types | Should Resolve Correctly', () {
       // Arrange - Singleton
       final singletonService = Marble();
-      ServiceLocator.I.registerSingleton(singletonService);
+      ServiceLocator.I.registerSingletonSync(singletonService);
 
       // Arrange - Transient
-      ServiceLocator.I.registerTransient<WalkService>(
+      ServiceLocator.I.registerTransientSync<WalkService>(
         (locator, namedArgs) => WalkService(),
       );
 
       // Arrange - Lazy
       final lazyService = Lazy<EatingService>(factory: () => EatingService());
-      ServiceLocator.I.registerLazy<EatingService>(lazyService);
+      ServiceLocator.I.registerLazySync<EatingService>(lazyService);
 
       // Act & Assert - Singleton
-      final resolvedSingleton = ServiceLocator.I.resolve<Marble>();
+      final resolvedSingleton = ServiceLocator.I.resolveSync<Marble>();
       expect(resolvedSingleton, isNotNull);
       expect(resolvedSingleton, isA<Marble>());
 
       // Act & Assert - Transient
-      final resolvedTransientService = ServiceLocator.I.resolve<WalkService>();
+      final resolvedTransientService = ServiceLocator.I.resolveSync<WalkService>();
       expect(resolvedTransientService, isNotNull);
       expect(resolvedTransientService, isA<WalkService>());
 
       // Act & Assert - Lazy
-      final resolvedLazyService = ServiceLocator.I.resolve<EatingService>();
+      final resolvedLazyService = ServiceLocator.I.resolveSync<EatingService>();
       expect(resolvedLazyService, isNotNull);
       expect(resolvedLazyService, isA<EatingService>());
     });
@@ -54,14 +54,14 @@ void main() {
     test('Singleton and Lazy | Register Both | Should Resolve First Registered', () {
       // Arrange - Singleton
       final singletonService = Granite();
-      ServiceLocator.I.registerSingleton(singletonService);
+      ServiceLocator.I.registerSingletonSync(singletonService);
 
       // Arrange - Lazy
       final lazyService = Lazy<Granite>(factory: () => Granite());
-      ServiceLocator.I.registerLazy<Granite>(lazyService);
+      ServiceLocator.I.registerLazySync<Granite>(lazyService);
 
       // Act
-      final resolvedService = ServiceLocator.I.resolve<Granite>();
+      final resolvedService = ServiceLocator.I.resolveSync<Granite>();
 
       // Assert
       expect(resolvedService, isNotNull);
@@ -72,21 +72,21 @@ void main() {
 
     test('Transient and Lazy | Combine for Dynamic Resolution | Should Resolve Both Correctly', () {
       // Arrange - Transient
-      ServiceLocator.I.registerTransient<FlightService>(
+      ServiceLocator.I.registerTransientSync<FlightService>(
         (locator, namedArgs) => FlightService(),
       );
 
       // Arrange - Lazy
       final lazyService = Lazy<SwimService>(factory: () => SwimService());
-      ServiceLocator.I.registerLazy<SwimService>(lazyService);
+      ServiceLocator.I.registerLazySync<SwimService>(lazyService);
 
       // Act & Assert - Transient
-      final resolvedTransientService = ServiceLocator.I.resolve<FlightService>();
+      final resolvedTransientService = ServiceLocator.I.resolveSync<FlightService>();
       expect(resolvedTransientService, isNotNull);
       expect(resolvedTransientService, isA<FlightService>());
 
       // Act & Assert - Lazy
-      final resolvedLazyService = ServiceLocator.I.resolve<SwimService>();
+      final resolvedLazyService = ServiceLocator.I.resolveSync<SwimService>();
       expect(resolvedLazyService, isNotNull);
       expect(resolvedLazyService, isA<SwimService>());
     });
@@ -99,19 +99,19 @@ void main() {
       final mockEatingService = MockEatingService();
 
       // Arrange - Register mocked services
-      ServiceLocator.I.registerSingleton<MovementService>(mockWalkService);
-      ServiceLocator.I.registerLazy<EatingService>(Lazy<EatingService>(factory: () => mockEatingService));
+      ServiceLocator.I.registerSingletonSync<MovementService>(mockWalkService);
+      ServiceLocator.I.registerLazySync<EatingService>(Lazy<EatingService>(factory: () => mockEatingService));
 
       // Arrange - Transient for Chicken that depends on both MovementService and EatingService
-      ServiceLocator.I.registerTransient<Chicken>(
+      ServiceLocator.I.registerTransientSync<Chicken>(
         (locator, namedArgs) => Chicken(
-          locator.resolve<MovementService>(),
-          locator.resolve<EatingService>(),
+          locator.resolveSync<MovementService>(),
+          locator.resolveSync<EatingService>(),
         ),
       );
 
       // Act
-      final chicken = ServiceLocator.I.resolve<Chicken>();
+      final chicken = ServiceLocator.I.resolveSync<Chicken>();
       chicken.doSomething();
       chicken.doSomethingElse();
 

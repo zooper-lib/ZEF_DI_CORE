@@ -12,34 +12,34 @@ void main() {
   });
 
   tearDown(() {
-    ServiceLocator.I.unregisterAll();
+    ServiceLocator.I.unregisterAllSync();
   });
 
-  group('Transient Registration |', () {
-    test('Register Transient | Eagle | Should Resolve Eagle Instance', () {
+  group('Async Transient Registration |', () {
+    test('Register Transient | Eagle | Should Resolve Eagle Instance', () async {
       // Arrange
-      ServiceLocator.I.registerSingleton<FlightService>(FlightService(), interfaces: {MovementService});
-      ServiceLocator.I.registerSingleton<EatingService>(EatingService());
+      await ServiceLocator.I.registerSingleton<FlightService>(FlightService(), interfaces: {MovementService});
+      await ServiceLocator.I.registerSingleton<EatingService>(EatingService());
 
       // Act
-      ServiceLocator.I.registerTransient<Eagle>(
-        (serviceLocator, namedArgs) => Eagle(
-          serviceLocator.resolve<FlightService>(),
-          serviceLocator.resolve<EatingService>(),
+      await ServiceLocator.I.registerTransient<Eagle>(
+        (serviceLocator, namedArgs) async => Eagle(
+          serviceLocator.resolveSync<FlightService>(),
+          serviceLocator.resolveSync<EatingService>(),
         ),
         interfaces: {Bird, Animal, Thing},
       );
 
-      final eagleInstances = ServiceLocator.I.resolveAll<Eagle>();
+      final eagleInstances = await ServiceLocator.I.resolveAll<Eagle>();
 
       // Assert
       expect(eagleInstances, isNotNull);
       expect(eagleInstances.length, 1);
     });
 
-    test('Register Transient | InvalidThing | Should Warn About Injection', () {
+    test('Register Transient | InvalidThing | Should Warn About Injection', () async {
       // Arrange
-      ServiceLocator.I.registerTransient<InvalidThing>(
+      await ServiceLocator.I.registerTransient<InvalidThing>(
         (serviceLocator, namedArgs) {
           throw Exception('Dependency Injection failed for InvalidThing.');
         },
@@ -54,13 +54,52 @@ void main() {
     });
   });
 
-  group('Transient Resolution |', () {
-    test('Resolve Transient | MovementService | Should Resolve WalkService', () {
+  group('Sync Transient Registration |', () {
+    test('Register Transient | Eagle | Should Resolve Eagle Instance', () {
       // Arrange
-      ServiceLocator.I.registerSingleton<WalkService>(WalkService(), interfaces: {MovementService});
+      ServiceLocator.I.registerSingletonSync<FlightService>(FlightService(), interfaces: {MovementService});
+      ServiceLocator.I.registerSingletonSync<EatingService>(EatingService());
 
       // Act
-      final walkService = ServiceLocator.I.resolve<MovementService>();
+      ServiceLocator.I.registerTransientSync<Eagle>(
+        (serviceLocator, namedArgs) => Eagle(
+          serviceLocator.resolveSync<FlightService>(),
+          serviceLocator.resolveSync<EatingService>(),
+        ),
+        interfaces: {Bird, Animal, Thing},
+      );
+
+      final eagleInstances = ServiceLocator.I.resolveAllSync<Eagle>();
+
+      // Assert
+      expect(eagleInstances, isNotNull);
+      expect(eagleInstances.length, 1);
+    });
+
+    test('Register Transient | InvalidThing | Should Warn About Injection', () {
+      // Arrange
+      ServiceLocator.I.registerTransientSync<InvalidThing>(
+        (serviceLocator, namedArgs) {
+          throw Exception('Dependency Injection failed for InvalidThing.');
+        },
+        interfaces: {Thing},
+      );
+
+      // Act & Assert
+      expect(
+        () => ServiceLocator.I.resolveSync<InvalidThing>(),
+        throwsA(isA<Exception>()),
+      );
+    });
+  });
+
+  group('Sync Transient Resolution |', () {
+    test('Resolve Transient | MovementService | Should Resolve WalkService', () {
+      // Arrange
+      ServiceLocator.I.registerSingletonSync<WalkService>(WalkService(), interfaces: {MovementService});
+
+      // Act
+      final walkService = ServiceLocator.I.resolveSync<MovementService>();
 
       // Assert
       expect(walkService, isA<WalkService>());
@@ -68,16 +107,16 @@ void main() {
 
     test('Resolve Transient With Parameters | ServiceWithParameters | Should Resolve Correctly', () {
       // Arrange
-      ServiceLocator.I.registerSingleton<WalkService>(WalkService(), interfaces: {MovementService});
-      ServiceLocator.I.registerTransient<ServiceWithParameters>(
+      ServiceLocator.I.registerSingletonSync<WalkService>(WalkService(), interfaces: {MovementService});
+      ServiceLocator.I.registerTransientSync<ServiceWithParameters>(
         (locator, namedArgs) => ServiceWithParameters(
-          locator.resolve<WalkService>(),
+          locator.resolveSync<WalkService>(),
           passedParam: namedArgs['passedParam'] as String,
         ),
       );
 
       // Act
-      final serviceWithParameters = ServiceLocator.I.resolve<ServiceWithParameters>(
+      final serviceWithParameters = ServiceLocator.I.resolveSync<ServiceWithParameters>(
         namedArgs: {'passedParam': 'exampleValue'},
       );
 
@@ -88,17 +127,17 @@ void main() {
 
     test('Resolve Transient With Excess Parameters | ServiceWithParameters | Should Still Resolve', () {
       // Arrange
-      ServiceLocator.I.registerSingleton<WalkService>(WalkService(), interfaces: {MovementService});
-      ServiceLocator.I.registerTransient<ServiceWithParameters>(
+      ServiceLocator.I.registerSingletonSync<WalkService>(WalkService(), interfaces: {MovementService});
+      ServiceLocator.I.registerTransientSync<ServiceWithParameters>(
         (locator, namedArgs) => ServiceWithParameters(
-          locator.resolve<WalkService>(),
+          locator.resolveSync<WalkService>(),
           passedParam: namedArgs['passedParam'] as String,
         ),
       );
 
       // Act & Assert
       expect(
-        () => ServiceLocator.I.resolve<ServiceWithParameters>(
+        () => ServiceLocator.I.resolveSync<ServiceWithParameters>(
           namedArgs: {'passedParam': 'exampleValue', 'tooMany': 'extraValue'},
         ),
         returnsNormally,
@@ -107,17 +146,17 @@ void main() {
 
     test('Resolve Transient With Incorrect Parameters | ServiceWithParameters | Should Throw TypeError', () {
       // Arrange
-      ServiceLocator.I.registerSingleton<WalkService>(WalkService(), interfaces: {MovementService});
-      ServiceLocator.I.registerTransient<ServiceWithParameters>(
+      ServiceLocator.I.registerSingletonSync<WalkService>(WalkService(), interfaces: {MovementService});
+      ServiceLocator.I.registerTransientSync<ServiceWithParameters>(
         (locator, namedArgs) => ServiceWithParameters(
-          locator.resolve<WalkService>(),
+          locator.resolveSync<WalkService>(),
           passedParam: namedArgs['passedParam'] as String,
         ),
       );
 
       // Act & Assert
       expect(
-        () => ServiceLocator.I.resolve<ServiceWithParameters>(
+        () => ServiceLocator.I.resolveSync<ServiceWithParameters>(
           namedArgs: {'wrongParameter': 'exampleValue'},
         ),
         throwsA(isA<TypeError>()),

@@ -26,13 +26,13 @@ void main() {
   });
 
   tearDown(() {
-    ServiceLocator.I.unregisterAll();
+    ServiceLocator.I.unregisterAllSync();
   });
 
   group('registerLazy', () {
     test('registerLazy | Uninstantiated Lazy Service | Should Not Instantiate Service', () {
       var initializationCounter = 0;
-      ServiceLocator.I.registerLazy<WalkService>(Lazy<WalkService>(factory: () {
+      ServiceLocator.I.registerLazySync<WalkService>(Lazy<WalkService>(factory: () {
         initializationCounter++;
         return WalkService();
       }));
@@ -42,18 +42,18 @@ void main() {
 
     test('registerLazy | First Resolve | Should Instantiate Service Once', () {
       var initializationCounter = 0;
-      ServiceLocator.I.registerLazy<WalkService>(Lazy<WalkService>(factory: () {
+      ServiceLocator.I.registerLazySync<WalkService>(Lazy<WalkService>(factory: () {
         initializationCounter++;
         return WalkService();
       }));
 
-      ServiceLocator.I.resolve<WalkService>();
+      ServiceLocator.I.resolveSync<WalkService>();
       expect(initializationCounter, 1);
     });
 
     test('registerLazy | After Expiry | Should Re-Instantiate Service', () async {
       var initializationCounter = 0;
-      ServiceLocator.I.registerLazy<WalkService>(Lazy<WalkService>(
+      ServiceLocator.I.registerLazySync<WalkService>(Lazy<WalkService>(
         factory: () {
           initializationCounter++;
           return WalkService();
@@ -61,9 +61,9 @@ void main() {
         expiryDuration: Duration(milliseconds: 100),
       ));
 
-      ServiceLocator.I.resolve<WalkService>();
+      ServiceLocator.I.resolveSync<WalkService>();
       await Future.delayed(Duration(milliseconds: 150));
-      ServiceLocator.I.resolve<WalkService>();
+      ServiceLocator.I.resolveSync<WalkService>();
 
       expect(initializationCounter, 2);
     });
@@ -72,37 +72,37 @@ void main() {
       var lazyMarble = Lazy<Marble>(factory: () => Marble());
       var lazyGranite = Lazy<Granite>(factory: () => Granite());
 
-      ServiceLocator.I.registerLazy<Marble>(lazyMarble, name: 'marble');
-      ServiceLocator.I.registerLazy<Granite>(lazyGranite, name: 'granite');
+      ServiceLocator.I.registerLazySync<Marble>(lazyMarble, name: 'marble');
+      ServiceLocator.I.registerLazySync<Granite>(lazyGranite, name: 'granite');
 
-      var marbleInstance = ServiceLocator.I.resolve<Marble>(name: 'marble');
-      var graniteInstance = ServiceLocator.I.resolve<Granite>(name: 'granite');
+      var marbleInstance = ServiceLocator.I.resolveSync<Marble>(name: 'marble');
+      var graniteInstance = ServiceLocator.I.resolveSync<Granite>(name: 'granite');
 
       expect(marbleInstance, isA<Marble>());
       expect(graniteInstance, isA<Granite>());
     });
 
     test('resolve | Unregistered Service | Should Throw StateError', () {
-      expect(() => ServiceLocator.I.resolve<NonInjectableService>(), throwsA(isA<StateError>()));
+      expect(() => ServiceLocator.I.resolveSync<NonInjectableService>(), throwsA(isA<StateError>()));
     });
 
     test('registerLazy | Resolve Multiple Instances | Should Return Same Initialized Instance', () {
       var lazyService = Lazy<WalkService>(factory: () => WalkService());
-      ServiceLocator.I.registerLazy<WalkService>(lazyService);
+      ServiceLocator.I.registerLazySync<WalkService>(lazyService);
 
-      var firstInstance = ServiceLocator.I.resolve<WalkService>();
-      var secondInstance = ServiceLocator.I.resolve<WalkService>();
+      var firstInstance = ServiceLocator.I.resolveSync<WalkService>();
+      var secondInstance = ServiceLocator.I.resolveSync<WalkService>();
 
       expect(firstInstance, same(secondInstance), reason: 'Multiple resolves should return the same instance for a lazily registered service.');
     });
 
     test('registerLazy | Resolve Service with Dependencies | Should Inject Dependencies', () {
-      var lazyChicken = Lazy<Chicken>(factory: () => Chicken(ServiceLocator.I.resolve<WalkService>(), ServiceLocator.I.resolve<EatingService>()));
-      ServiceLocator.I.registerLazy<WalkService>(Lazy<WalkService>(factory: () => WalkService()));
-      ServiceLocator.I.registerLazy<EatingService>(Lazy<EatingService>(factory: () => EatingService()));
-      ServiceLocator.I.registerLazy<Chicken>(lazyChicken);
+      var lazyChicken = Lazy<Chicken>(factory: () => Chicken(ServiceLocator.I.resolveSync<WalkService>(), ServiceLocator.I.resolveSync<EatingService>()));
+      ServiceLocator.I.registerLazySync<WalkService>(Lazy<WalkService>(factory: () => WalkService()));
+      ServiceLocator.I.registerLazySync<EatingService>(Lazy<EatingService>(factory: () => EatingService()));
+      ServiceLocator.I.registerLazySync<Chicken>(lazyChicken);
 
-      var chickenInstance = ServiceLocator.I.resolve<Chicken>();
+      var chickenInstance = ServiceLocator.I.resolveSync<Chicken>();
       expect(chickenInstance, isNotNull);
       expect(() => chickenInstance.doSomething(), returnsNormally);
       expect(() => chickenInstance.doSomethingElse(), returnsNormally);
@@ -115,17 +115,17 @@ void main() {
         return WalkService();
       });
 
-      ServiceLocator.I.registerLazy<WalkService>(lazyService);
+      ServiceLocator.I.registerLazySync<WalkService>(lazyService);
 
       // First resolve to initialize the service
-      ServiceLocator.I.resolve<WalkService>();
+      ServiceLocator.I.resolveSync<WalkService>();
       expect(initializationCounter, 1);
 
       // Manually reset or re-initialize the service here
       lazyService.reset();
 
       // Resolve again and expect the service to re-initialize
-      ServiceLocator.I.resolve<WalkService>();
+      ServiceLocator.I.resolveSync<WalkService>();
       expect(initializationCounter, 2, reason: 'Service should be re-initialized after manual reset.');
     });
   });
@@ -137,9 +137,9 @@ void main() {
       when(mockEatingService.eat()).thenReturn(null);
 
       var lazyChicken = Lazy<Chicken>(factory: () => Chicken(mockMovementService, mockEatingService));
-      ServiceLocator.I.registerLazy<Chicken>(lazyChicken, interfaces: null, name: null, key: null, environment: null);
+      ServiceLocator.I.registerLazySync<Chicken>(lazyChicken, interfaces: null, name: null, key: null, environment: null);
 
-      var chickenInstance = ServiceLocator.I.resolve<Chicken>();
+      var chickenInstance = ServiceLocator.I.resolveSync<Chicken>();
       expect(chickenInstance, isNotNull);
 
       chickenInstance.doSomething();
