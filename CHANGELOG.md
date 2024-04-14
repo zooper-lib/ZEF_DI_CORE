@@ -1,6 +1,7 @@
 ## 4.0.0
 
 - Merged `ZEF_DI_Abstractions` and `ZEF_DI_Inglue` together into this project
+- Added async version to all functions 
 
 ## 3.0.0
 
