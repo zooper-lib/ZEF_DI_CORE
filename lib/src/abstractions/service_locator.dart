@@ -78,15 +78,6 @@ abstract class ServiceLocator {
     String? environment,
   });
 
-  /// Synchronous version of [registerSingleton].
-  void registerSingletonSync<T extends Object>(
-    T instance, {
-    Set<Type>? interfaces,
-    String? name,
-    dynamic key,
-    String? environment,
-  });
-
   /// Asynchronously registers a resolution strategy for a singleton of type [T] using a factory function, enabling custom instantiation logic.
   ///
   /// This method allows the consumer to specify exactly how the singleton instance of [T] should be created, offering
@@ -114,15 +105,6 @@ abstract class ServiceLocator {
   /// specific requirements or conditions enforced by the underlying mechanism.
   Future<void> registerSingletonFactory<T extends Object>(
     Future<T> Function(ServiceLocator serviceLocator) factory, {
-    Set<Type>? interfaces,
-    String? name,
-    dynamic key,
-    String? environment,
-  });
-
-  /// Synchronous version of [registerSingletonFactory].
-  void registerSingletonFactorySync<T extends Object>(
-    T Function(ServiceLocator serviceLocator) factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,
@@ -167,18 +149,6 @@ abstract class ServiceLocator {
     String? environment,
   });
 
-  /// Synchronous version of [registerTransient].
-  void registerTransientSync<T extends Object>(
-    T Function(
-      ServiceLocator serviceLocator,
-      Map<String, dynamic> namedArgs,
-    ) factory, {
-    Set<Type>? interfaces,
-    String? name,
-    dynamic key,
-    String? environment,
-  });
-
   /// Asynchronously registers a [Lazy<T>] instance with the service locator for lazy initialization and resolution.
   ///
   /// The [Lazy<T>] wrapper facilitates the deferred creation of an instance of type [T], ensuring
@@ -212,15 +182,6 @@ abstract class ServiceLocator {
     String? environment,
   });
 
-  /// Synchronous version of [registerLazy].
-  void registerLazySync<T extends Object>(
-    Lazy<T> lazyInstance, {
-    Set<Type>? interfaces,
-    String? name,
-    dynamic key,
-    String? environment,
-  });
-
   /// Asynchronously resolves the first registered instance of type `T` that matches the given criteria.
   ///
   /// - `interface`: An optional interface type to filter the instances by the interface they implement.
@@ -234,16 +195,6 @@ abstract class ServiceLocator {
   /// Throws [StateError] if no matching instance is found.
   /// Note: It does not consider the settings of the [ServiceLocatorConfig.throwErrors].
   Future<T> resolve<T extends Object>({
-    Type? interface,
-    String? name,
-    dynamic key,
-    String? environment,
-    Map<String, dynamic>? namedArgs,
-    bool resolveFirst = true,
-  });
-
-  /// Synchronous version of [resolve].
-  T resolveSync<T extends Object>({
     Type? interface,
     String? name,
     dynamic key,
@@ -289,15 +240,6 @@ abstract class ServiceLocator {
     Map<String, dynamic>? namedArgs,
   });
 
-  /// Synchronous version of [resolveOrNull].
-  T? resolveOrNullSync<T extends Object>({
-    Type? interface,
-    String? name,
-    dynamic key,
-    String? environment,
-    Map<String, dynamic>? namedArgs,
-  });
-
   /// Asynchronously attempts to resolve an instance of type `T` based on the specified criteria, returning `null` if no match is found.
   ///
   /// This method functions similarly to [resolveSync] but is designed to return `null` instead of throwing an
@@ -332,15 +274,6 @@ abstract class ServiceLocator {
     Map<String, dynamic>? namedArgs,
   });
 
-  /// Synchronous version of [resolveAll].
-  Set<T> resolveAllSync<T extends Object>({
-    Type? interface,
-    String? name,
-    dynamic key,
-    String? environment,
-    Map<String, dynamic>? namedArgs,
-  });
-
   /// Asynchronously Overrides an existing registration with a new `Singleton`.
   ///
   /// This method allows dynamically updating the service associated with a specific
@@ -357,14 +290,7 @@ abstract class ServiceLocator {
   /// that the integrity of the service registry is maintained.
   Future<void> overrideWithSingleton<T extends Object>(
     T instance, {
-    String? name,
-    dynamic key,
-    String? environment,
-  });
-
-  /// Synchronous version of [overrideWithSingleton].
-  void overrideWithSingletonSync<T extends Object>(
-    T instance, {
+    Set<Type>? interfaces,
     String? name,
     dynamic key,
     String? environment,
@@ -390,17 +316,7 @@ abstract class ServiceLocator {
       ServiceLocator serviceLocator,
       Map<String, dynamic> namedArgs,
     ) factory, {
-    String? name,
-    dynamic key,
-    String? environment,
-  });
-
-  /// Synchronous version of [overrideWithTransient].
-  void overrideWithTransientSync<T extends Object>(
-    T Function(
-      ServiceLocator serviceLocator,
-      Map<String, dynamic> namedArgs,
-    ) factory, {
+    Set<Type>? interfaces,
     String? name,
     dynamic key,
     String? environment,
@@ -423,14 +339,7 @@ abstract class ServiceLocator {
   /// to override a non-existent service, ensuring that the operation is performed safely and predictably.
   Future<void> overrideWithLazy<T extends Object>(
     Lazy<T> lazyInstance, {
-    String? name,
-    dynamic key,
-    String? environment,
-  });
-
-  /// Synchronous version of [overrideWithLazy].
-  void overrideWithLazySync<T extends Object>(
-    Lazy<T> lazyInstance, {
+    Set<Type>? interfaces,
     String? name,
     dynamic key,
     String? environment,
@@ -455,13 +364,6 @@ abstract class ServiceLocator {
     String? environment,
   });
 
-  /// Synchronous version of [unregister].
-  void unregisterSync<T extends Object>({
-    String? name,
-    dynamic key,
-    String? environment,
-  });
-
   /// Asynchronously clears all registrations from the service locator.
   ///
   /// This method is utilized for comprehensive cleanup, removing all singleton and factory
@@ -472,9 +374,6 @@ abstract class ServiceLocator {
   /// Throws [StateError] if an internal error occurs during the unregistration process, guaranteeing
   /// that the operation is conducted securely and without unintended consequences.
   Future<void> unregisterAll();
-
-  /// Synchronous version of [unregisterAll].
-  void unregisterAllSync();
 }
 
 /// Facilitates the configuration and initialization of a [ServiceLocator] instance using a fluent interface.
@@ -532,6 +431,7 @@ class ServiceLocatorBuilder {
     }
 
     // Assigns the newly configured ServiceLocator instance to its singleton reference.
-    ServiceLocator._instance = InternalServiceLocator(adapter: _adapter, config: _config);
+    ServiceLocator._instance =
+        InternalServiceLocator(adapter: _adapter, config: _config);
   }
 }

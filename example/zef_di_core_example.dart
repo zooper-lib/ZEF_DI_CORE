@@ -3,32 +3,32 @@ import 'package:zef_di_core/zef_di_core.dart';
 import 'test_classes/implementations/index.dart';
 import 'test_classes/interfaces/index.dart';
 
-void main() {
+void main() async {
   // Build the ServiceLocator
   ServiceLocatorBuilder().build();
 
   // Register an Singleton
-  ServiceLocator.I.registerSingletonSync(
+  await ServiceLocator.I.registerSingleton(
     Dolphin(),
     interfaces: {Animal, Fish},
   );
 
   // Register another Singleton
-  ServiceLocator.I.registerSingletonSync(
+  await ServiceLocator.I.registerSingleton(
     Dolphin(),
     interfaces: {Animal, Fish},
   );
 
   // Register a Transient
-  ServiceLocator.I.registerTransientSync(
-    (serviceLocator, namedArgs) => Whale(),
+  await ServiceLocator.I.registerTransient(
+    (serviceLocator, namedArgs) async => Whale(),
   );
 
   // Retrieve the Singleton
-  final instance = ServiceLocator.I.resolveSync<Dolphin>();
+  final instance = await ServiceLocator.I.resolve<Dolphin>();
 
   // Retrieve the instance via the interface
-  final interfaceInstance = ServiceLocator.I.resolveSync<Animal>();
+  final interfaceInstance = await ServiceLocator.I.resolve<Animal>();
 
   // Do something with the instances
   print(instance.runtimeType); // Output: Dolphin

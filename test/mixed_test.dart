@@ -16,52 +16,57 @@ void main() {
     initializeServiceLocator();
   });
 
-  tearDown(() {
-    ServiceLocator.I.unregisterAllSync();
+  tearDown(() async {
+    await ServiceLocator.I.unregisterAll();
   });
 
   group('Combined Registrations |', () {
-    test('Singleton, Transient, and Lazy | Mix Registration Types | Should Resolve Correctly', () {
+    test(
+        'Singleton, Transient, and Lazy | Mix Registration Types | Should Resolve Correctly',
+        () async {
       // Arrange - Singleton
       final singletonService = Marble();
-      ServiceLocator.I.registerSingletonSync(singletonService);
+      await ServiceLocator.I.registerSingleton(singletonService);
 
       // Arrange - Transient
-      ServiceLocator.I.registerTransientSync<WalkService>(
-        (locator, namedArgs) => WalkService(),
+      await ServiceLocator.I.registerTransient<WalkService>(
+        (locator, namedArgs) async => WalkService(),
       );
 
       // Arrange - Lazy
       final lazyService = Lazy<EatingService>(factory: () => EatingService());
-      ServiceLocator.I.registerLazySync<EatingService>(lazyService);
+      await ServiceLocator.I.registerLazy<EatingService>(lazyService);
 
       // Act & Assert - Singleton
-      final resolvedSingleton = ServiceLocator.I.resolveSync<Marble>();
+      final resolvedSingleton = await ServiceLocator.I.resolve<Marble>();
       expect(resolvedSingleton, isNotNull);
       expect(resolvedSingleton, isA<Marble>());
 
       // Act & Assert - Transient
-      final resolvedTransientService = ServiceLocator.I.resolveSync<WalkService>();
+      final resolvedTransientService =
+          await ServiceLocator.I.resolve<WalkService>();
       expect(resolvedTransientService, isNotNull);
       expect(resolvedTransientService, isA<WalkService>());
 
       // Act & Assert - Lazy
-      final resolvedLazyService = ServiceLocator.I.resolveSync<EatingService>();
+      final resolvedLazyService =
+          await ServiceLocator.I.resolve<EatingService>();
       expect(resolvedLazyService, isNotNull);
       expect(resolvedLazyService, isA<EatingService>());
     });
 
-    test('Singleton and Lazy | Register Both | Should Resolve First Registered', () {
+    test('Singleton and Lazy | Register Both | Should Resolve First Registered',
+        () async {
       // Arrange - Singleton
       final singletonService = Granite();
-      ServiceLocator.I.registerSingletonSync(singletonService);
+      await ServiceLocator.I.registerSingleton(singletonService);
 
       // Arrange - Lazy
       final lazyService = Lazy<Granite>(factory: () => Granite());
-      ServiceLocator.I.registerLazySync<Granite>(lazyService);
+      await ServiceLocator.I.registerLazy<Granite>(lazyService);
 
       // Act
-      final resolvedService = ServiceLocator.I.resolveSync<Granite>();
+      final resolvedService = await ServiceLocator.I.resolve<Granite>();
 
       // Assert
       expect(resolvedService, isNotNull);
@@ -70,48 +75,55 @@ void main() {
       expect(identical(resolvedService, singletonService), isTrue);
     });
 
-    test('Transient and Lazy | Combine for Dynamic Resolution | Should Resolve Both Correctly', () {
+    test(
+        'Transient and Lazy | Combine for Dynamic Resolution | Should Resolve Both Correctly',
+        () async {
       // Arrange - Transient
-      ServiceLocator.I.registerTransientSync<FlightService>(
-        (locator, namedArgs) => FlightService(),
+      ServiceLocator.I.registerTransient<FlightService>(
+        (locator, namedArgs) async => FlightService(),
       );
 
       // Arrange - Lazy
       final lazyService = Lazy<SwimService>(factory: () => SwimService());
-      ServiceLocator.I.registerLazySync<SwimService>(lazyService);
+      await ServiceLocator.I.registerLazy<SwimService>(lazyService);
 
       // Act & Assert - Transient
-      final resolvedTransientService = ServiceLocator.I.resolveSync<FlightService>();
+      final resolvedTransientService =
+          await ServiceLocator.I.resolve<FlightService>();
       expect(resolvedTransientService, isNotNull);
       expect(resolvedTransientService, isA<FlightService>());
 
       // Act & Assert - Lazy
-      final resolvedLazyService = ServiceLocator.I.resolveSync<SwimService>();
+      final resolvedLazyService = await ServiceLocator.I.resolve<SwimService>();
       expect(resolvedLazyService, isNotNull);
       expect(resolvedLazyService, isA<SwimService>());
     });
   });
 
   group('Recursive Service Resolution |', () {
-    test('Resolve Service with Dependencies | Different Registration Types | Should Invoke Dependency Methods', () {
+    test(
+        'Resolve Service with Dependencies | Different Registration Types | Should Invoke Dependency Methods',
+        () async {
       // Arrange - Mocked services
       final mockWalkService = MockWalkService();
       final mockEatingService = MockEatingService();
 
       // Arrange - Register mocked services
-      ServiceLocator.I.registerSingletonSync<MovementService>(mockWalkService);
-      ServiceLocator.I.registerLazySync<EatingService>(Lazy<EatingService>(factory: () => mockEatingService));
+      await ServiceLocator.I
+          .registerSingleton<MovementService>(mockWalkService);
+      await ServiceLocator.I.registerLazy<EatingService>(
+          Lazy<EatingService>(factory: () => mockEatingService));
 
       // Arrange - Transient for Chicken that depends on both MovementService and EatingService
-      ServiceLocator.I.registerTransientSync<Chicken>(
-        (locator, namedArgs) => Chicken(
-          locator.resolveSync<MovementService>(),
-          locator.resolveSync<EatingService>(),
+      await ServiceLocator.I.registerTransient<Chicken>(
+        (locator, namedArgs) async => Chicken(
+          await locator.resolve<MovementService>(),
+          await locator.resolve<EatingService>(),
         ),
       );
 
       // Act
-      final chicken = ServiceLocator.I.resolveSync<Chicken>();
+      final chicken = await ServiceLocator.I.resolve<Chicken>();
       chicken.doSomething();
       chicken.doSomethingElse();
 
