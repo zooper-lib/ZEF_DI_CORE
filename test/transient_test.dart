@@ -25,9 +25,9 @@ void main() {
 
       // Act
       await ServiceLocator.I.registerTransient<Eagle>(
-        (serviceLocator, namedArgs) async => Eagle(
-          await serviceLocator.resolve<FlightService>(),
-          await serviceLocator.resolve<EatingService>(),
+        (namedArgs) async => Eagle(
+          await ServiceLocator.I.resolve<FlightService>(),
+          await ServiceLocator.I.resolve<EatingService>(),
         ),
         interfaces: {Bird, Animal, Thing},
       );
@@ -43,7 +43,7 @@ void main() {
         () async {
       // Arrange
       await ServiceLocator.I.registerTransient<InvalidThing>(
-        (serviceLocator, namedArgs) {
+        (namedArgs) {
           throw Exception('Dependency Injection failed for InvalidThing.');
         },
         interfaces: {Thing},
@@ -78,8 +78,8 @@ void main() {
       await ServiceLocator.I.registerSingleton<WalkService>(WalkService(),
           interfaces: {MovementService});
       await ServiceLocator.I.registerTransient<ServiceWithParameters>(
-        (locator, namedArgs) async => ServiceWithParameters(
-          await locator.resolve<WalkService>(),
+        (namedArgs) async => ServiceWithParameters(
+          await ServiceLocator.I.resolve<WalkService>(),
           passedParam: namedArgs['passedParam'] as String,
         ),
       );
@@ -102,8 +102,8 @@ void main() {
       await ServiceLocator.I.registerSingleton<WalkService>(WalkService(),
           interfaces: {MovementService});
       await ServiceLocator.I.registerTransient<ServiceWithParameters>(
-        (locator, namedArgs) async => ServiceWithParameters(
-          await locator.resolve<WalkService>(),
+        (namedArgs) async => ServiceWithParameters(
+          await ServiceLocator.I.resolve<WalkService>(),
           passedParam: namedArgs['passedParam'] as String,
         ),
       );
@@ -124,8 +124,8 @@ void main() {
       await ServiceLocator.I.registerSingleton<WalkService>(WalkService(),
           interfaces: {MovementService});
       await ServiceLocator.I.registerTransient<ServiceWithParameters>(
-        (locator, namedArgs) async => ServiceWithParameters(
-          await locator.resolve<WalkService>(),
+        (namedArgs) async => ServiceWithParameters(
+          await ServiceLocator.I.resolve<WalkService>(),
           passedParam: namedArgs['passedParam'] as String,
         ),
       );

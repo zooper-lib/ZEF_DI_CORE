@@ -1,4 +1,3 @@
-import 'package:zef_di_core/zef_di_core.dart';
 import 'package:zef_helpers_lazy/zef_helpers_lazy.dart';
 
 /// A base class for managing service registrations within a dependency injection framework.
@@ -106,7 +105,7 @@ abstract class BasicRegistration<T extends Object> extends Registration<T> {
     required super.environment,
   });
 
-  Future<T> resolve(ServiceLocator serviceLocator);
+  Future<T> resolve();
 }
 
 abstract class ParameterizedRegistration<T extends Object>
@@ -118,8 +117,7 @@ abstract class ParameterizedRegistration<T extends Object>
     required super.environment,
   });
 
-  Future<T> resolve(
-      ServiceLocator serviceLocator, Map<String, dynamic> namedArgs);
+  Future<T> resolve(Map<String, dynamic> namedArgs);
 }
 
 /* mixin SyncRegistration<T extends Object> on Registration<T> {}
@@ -158,7 +156,7 @@ class SingletonRegistration<T extends Object> extends BasicRegistration<T> {
   }
 
   @override
-  Future<T> resolve(ServiceLocator serviceLocator) => Future.value(_instance);
+  Future<T> resolve() => Future.value(_instance);
 }
 
 /* /// A concrete implementation of [Registration] for singleton services.
@@ -197,14 +195,10 @@ class SyncSingletonRegistration<T extends Object> extends Registration<T>
 
 class TransientRegistration<T extends Object>
     extends ParameterizedRegistration<T> {
-  final Future<T> Function(
-    ServiceLocator serviceLocator,
-    Map<String, dynamic> namedArgs,
-  ) _factory;
+  final Future<T> Function(Map<String, dynamic> namedArgs) _factory;
 
   TransientRegistration({
-    required Future<T> Function(ServiceLocator, Map<String, dynamic> namedArgs)
-        factory,
+    required Future<T> Function(Map<String, dynamic> namedArgs) factory,
     required super.interfaces,
     required super.name,
     required super.key,
@@ -212,17 +206,12 @@ class TransientRegistration<T extends Object>
   }) : _factory = factory;
 
   @override
-  Future<T> resolve(
-      ServiceLocator serviceLocator, Map<String, dynamic> namedArgs) {
-    return _factory(serviceLocator, namedArgs);
+  Future<T> resolve(Map<String, dynamic> namedArgs) {
+    return _factory(namedArgs);
   }
 
-  factory TransientRegistration.from(
-      TransientRegistration registration,
-      Future<T> Function(
-        ServiceLocator serviceLocator,
-        Map<String, dynamic> namedArgs,
-      ) newFactory) {
+  factory TransientRegistration.from(TransientRegistration registration,
+      Future<T> Function(Map<String, dynamic> namedArgs) newFactory) {
     return TransientRegistration(
       factory: newFactory,
       interfaces: registration.interfaces,
@@ -248,7 +237,7 @@ class LazyRegistration<T extends Object> extends BasicRegistration<T> {
   });
 
   @override
-  Future<T> resolve(ServiceLocator serviceLocator) {
+  Future<T> resolve() {
     return Future.value(lazyInstance.value);
   }
 }

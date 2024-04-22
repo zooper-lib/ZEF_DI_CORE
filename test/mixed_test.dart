@@ -30,7 +30,7 @@ void main() {
 
       // Arrange - Transient
       await ServiceLocator.I.registerTransient<WalkService>(
-        (locator, namedArgs) async => WalkService(),
+        (namedArgs) async => WalkService(),
       );
 
       // Arrange - Lazy
@@ -80,7 +80,7 @@ void main() {
         () async {
       // Arrange - Transient
       ServiceLocator.I.registerTransient<FlightService>(
-        (locator, namedArgs) async => FlightService(),
+        (namedArgs) async => FlightService(),
       );
 
       // Arrange - Lazy
@@ -116,9 +116,9 @@ void main() {
 
       // Arrange - Transient for Chicken that depends on both MovementService and EatingService
       await ServiceLocator.I.registerTransient<Chicken>(
-        (locator, namedArgs) async => Chicken(
-          await locator.resolve<MovementService>(),
-          await locator.resolve<EatingService>(),
+        (namedArgs) async => Chicken(
+          await ServiceLocator.I.resolve<MovementService>(),
+          await ServiceLocator.I.resolve<EatingService>(),
         ),
       );
 

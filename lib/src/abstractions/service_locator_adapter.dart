@@ -1,5 +1,4 @@
 import 'package:any_of/any_of.dart';
-import 'package:zef_di_core/src/abstractions/service_locator.dart';
 import 'package:zef_helpers_lazy/zef_helpers_lazy.dart';
 
 abstract class ServiceLocatorAdapter {
@@ -17,10 +16,7 @@ abstract class ServiceLocatorAdapter {
   /// Asynchronously registers a transient factory for type [T].
   Future<Triplet<Success, Conflict, InternalError>>
       registerTransient<T extends Object>(
-    Future<T> Function(
-      ServiceLocator serviceLocator,
-      Map<String, dynamic> namedArgs,
-    ) factory, {
+    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
     required Set<Type>? interfaces,
     required String? name,
     required dynamic key,
@@ -70,10 +66,7 @@ abstract class ServiceLocatorAdapter {
   /// Asynchronously overrides an existing registration with a new `Transient` of type [T].
   Future<Doublet<Success, InternalError>>
       overrideWithTransient<T extends Object>(
-    Future<T> Function(
-      ServiceLocator serviceLocator,
-      Map<String, dynamic> namedArgs,
-    ) factory, {
+    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
     required Set<Type>? interfaces,
     required String? name,
     required dynamic key,

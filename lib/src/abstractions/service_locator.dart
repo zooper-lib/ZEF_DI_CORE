@@ -104,7 +104,7 @@ abstract class ServiceLocator {
   /// validation or constraint-related errors might be thrown by the service locator's implementation, reflecting
   /// specific requirements or conditions enforced by the underlying mechanism.
   Future<void> registerSingletonFactory<T extends Object>(
-    Future<T> Function(ServiceLocator serviceLocator) factory, {
+    Future<T> Function() factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,
@@ -139,10 +139,7 @@ abstract class ServiceLocator {
   /// Additional errors may be encountered based on the service locator's underlying implementation,
   /// particularly if internal validation fails or if there are issues during the resolution process.
   Future<void> registerTransient<T extends Object>(
-    Future<T> Function(
-      ServiceLocator serviceLocator,
-      Map<String, dynamic> namedArgs,
-    ) factory, {
+    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,
@@ -312,10 +309,7 @@ abstract class ServiceLocator {
   /// trying to override a non-existent factory registration, to ensure consistent and error-free
   /// service registration.
   Future<void> overrideWithTransient<T extends Object>(
-    Future<T> Function(
-      ServiceLocator serviceLocator,
-      Map<String, dynamic> namedArgs,
-    ) factory, {
+    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,

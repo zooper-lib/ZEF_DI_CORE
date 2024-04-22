@@ -110,14 +110,13 @@ void main() {
               'Multiple resolves should return the same instance for a lazily registered service.');
     });
 
-    // TODO: Reimplement this test
-    /* test(
+    test(
         'registerLazy | Resolve Service with Dependencies | Should Inject Dependencies',
         () async {
       var lazyChicken = Lazy<Chicken>(
-        factory: () => Chicken(
-          ServiceLocator.I.resolve<WalkService>(),
-          ServiceLocator.I.resolve<EatingService>(),
+        factory: () async => Chicken(
+          await ServiceLocator.I.resolve<WalkService>(),
+          await ServiceLocator.I.resolve<EatingService>(),
         ),
       );
       await ServiceLocator.I.registerLazy<WalkService>(
@@ -130,7 +129,7 @@ void main() {
       expect(chickenInstance, isNotNull);
       expect(() => chickenInstance.doSomething(), returnsNormally);
       expect(() => chickenInstance.doSomethingElse(), returnsNormally);
-    }); */
+    });
 
     test('registerLazy | Manual Reset | Should Re-Initialize Service',
         () async {

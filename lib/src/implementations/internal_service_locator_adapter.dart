@@ -51,10 +51,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   @override
   Future<Triplet<Success, Conflict, InternalError>>
       registerTransient<T extends Object>(
-    Future<T> Function(
-      ServiceLocator serviceLocator,
-      Map<String, dynamic> namedArgs,
-    ) factory, {
+    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
     required Set<Type>? interfaces,
     required String? name,
     required dynamic key,
@@ -179,11 +176,10 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
     for (final registration in matchedRegistrations) {
       switch (registration) {
         case BasicRegistration<T>():
-          final instance = await registration.resolve(ServiceLocator.I);
+          final instance = await registration.resolve();
           resolvedInstances.add(instance);
         case ParameterizedRegistration<T>():
-          final instance =
-              await registration.resolve(ServiceLocator.I, namedArgs);
+          final instance = await registration.resolve(namedArgs);
           resolvedInstances.add(instance);
         default:
           throw Exception("Unsupported registration type for $T");
@@ -232,10 +228,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   @override
   Future<Doublet<Success, InternalError>>
       overrideWithTransient<T extends Object>(
-    Future<T> Function(
-      ServiceLocator serviceLocator,
-      Map<String, dynamic> namedArgs,
-    ) factory, {
+    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
     required Set<Type>? interfaces,
     required String? name,
     required key,
@@ -412,9 +405,9 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
       Registration<T> registration, Map<String, dynamic> namedArgs) async {
     switch (registration) {
       case BasicRegistration<T>():
-        return await registration.resolve(ServiceLocator.I);
+        return await registration.resolve();
       case ParameterizedRegistration<T>():
-        return await registration.resolve(ServiceLocator.I, namedArgs);
+        return await registration.resolve(namedArgs);
       default:
         throw Exception("Unsupported registration type for $T");
     }

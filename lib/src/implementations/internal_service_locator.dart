@@ -49,14 +49,14 @@ class InternalServiceLocator implements ServiceLocator {
 
   @override
   Future<void> registerSingletonFactory<T extends Object>(
-    Future<T> Function(ServiceLocator serviceLocator) factory, {
+    Future<T> Function() factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,
     String? environment,
   }) async {
     // Resolve the Singleton
-    final instance = await factory(ServiceLocator.I);
+    final instance = await factory();
 
     return await registerSingleton(
       instance,
@@ -69,10 +69,7 @@ class InternalServiceLocator implements ServiceLocator {
 
   @override
   Future<void> registerTransient<T extends Object>(
-    Future<T> Function(
-      ServiceLocator serviceLocator,
-      Map<String, dynamic> namedArgs,
-    ) factory, {
+    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,
@@ -259,10 +256,7 @@ class InternalServiceLocator implements ServiceLocator {
 
   @override
   Future<void> overrideWithTransient<T extends Object>(
-    Future<T> Function(
-      ServiceLocator serviceLocator,
-      Map<String, dynamic> namedArgs,
-    ) factory, {
+    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,
