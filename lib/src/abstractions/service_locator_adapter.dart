@@ -35,16 +35,6 @@ abstract class ServiceLocatorAdapter {
     required bool allowMultipleInstances,
   });
 
-  Future<Triplet<Success, Conflict, InternalError>>
-      registerLazyFactory<T extends Object>(
-    Future<Lazy<T>> Function(Map<String, dynamic> namedArgs) factory, {
-    required Set<Type>? interfaces,
-    required String? name,
-    required dynamic key,
-    required String? environment,
-    required bool allowMultipleInstances,
-  });
-
   /// Asynchronously retrieves an instance of type [T].
   Future<Triplet<T, NotFound, InternalError>> resolve<T extends Object>({
     required String? name,

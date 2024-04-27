@@ -172,16 +172,10 @@ abstract class ServiceLocator {
   /// and ensure that each registration is unique based on the combination of type, name, key, and environment.
   /// Further errors may be thrown depending on the underlying service locator's implementation, especially
   /// when internal consistency checks or validations fail.
+  ///
+  ///* NOTE: As of now there is no way to pass namedArgs to the factory method of a Lazy registration.
   Future<void> registerLazy<T extends Object>(
     Lazy<T> lazyInstance, {
-    Set<Type>? interfaces,
-    String? name,
-    dynamic key,
-    String? environment,
-  });
-
-  Future<void> registerLazyFactory<T extends Object>(
-    Future<Lazy<T>> Function(Map<String, dynamic> namedArgs) factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,

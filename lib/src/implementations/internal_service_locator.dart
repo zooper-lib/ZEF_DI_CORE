@@ -135,39 +135,6 @@ class InternalServiceLocator implements ServiceLocator {
   }
 
   @override
-  Future<void> registerLazyFactory<T extends Object>(
-    Future<Lazy<T>> Function(Map<String, dynamic> namedArgs) factory, {
-    Set<Type>? interfaces,
-    String? name,
-    dynamic key,
-    String? environment,
-  }) async {
-    final response = await _adapter.registerLazyFactory<T>(
-      factory,
-      interfaces: interfaces,
-      name: name,
-      key: key,
-      environment: environment,
-      allowMultipleInstances: _config.allowMultipleInstances,
-    );
-
-    // On conflict
-    if (response.isSecond) {
-      if (_config.throwErrors) {
-        throw StateError(registrationAlreadyExistsForType(T));
-      } else {
-        Logger.I.warning(message: registrationAlreadyExistsForType(T));
-        return;
-      }
-    }
-
-    // On internal error
-    if (response.isThird) {
-      throw StateError(internalErrorOccurred(response.third.message));
-    }
-  }
-
-  @override
   Future<T> resolve<T extends Object>({
     Type? interface,
     String? name,

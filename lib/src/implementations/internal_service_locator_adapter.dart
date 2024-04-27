@@ -122,45 +122,6 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }
 
   @override
-  Future<Triplet<Success, Conflict, InternalError>>
-      registerLazyFactory<T extends Object>(
-    Future<Lazy<T>> Function(Map<String, dynamic> namedArgs) factory, {
-    required Set<Type>? interfaces,
-    required String? name,
-    required dynamic key,
-    required String? environment,
-    required bool allowMultipleInstances,
-  }) async {
-    // Check if there is already a registration
-    if (allowMultipleInstances == false &&
-        _isTypeRegistered(
-          T,
-          name: name,
-          key: key,
-          environment: environment,
-        )) {
-      return Triplet.second(
-        Conflict(
-            '$Registration already exists for type $T. Skipping registration.'),
-      );
-    }
-
-    var registration = LazyFactoryRegistration<T>(
-      factory: factory,
-      interfaces: interfaces,
-      name: name,
-      key: key,
-      environment: environment,
-    );
-
-    // Register the lazy instance
-    _registrations[T] ??= {};
-    _registrations[T]!.add(registration);
-
-    return Triplet.first(Success());
-  }
-
-  @override
   Future<Triplet<T, NotFound, InternalError>> resolve<T extends Object>({
     required String? name,
     required key,

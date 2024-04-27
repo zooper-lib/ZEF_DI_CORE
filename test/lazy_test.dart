@@ -115,21 +115,4 @@ void main() {
           reason: 'Service should be re-initialized after manual reset.');
     });
   });
-
-  group('Lazy Factory', () {
-    test('Instantiate Service Once', () async {
-      var initializationCounter = 0;
-      await ServiceLocator.I.registerLazyFactory<NoDependencies>(
-        (namedArgs) async => Lazy<NoDependencies>(
-          factory: () {
-            initializationCounter++;
-            return NoDependencies();
-          },
-        ),
-      );
-
-      await ServiceLocator.I.resolve<NoDependencies>();
-      expect(initializationCounter, 1);
-    });
-  });
 }

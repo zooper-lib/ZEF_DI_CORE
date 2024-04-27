@@ -128,21 +128,3 @@ class LazyRegistration<T extends Object> extends ParameterizedRegistration<T> {
     return await Future.value(lazyInstance.value);
   }
 }
-
-class LazyFactoryRegistration<T extends Object>
-    extends ParameterizedRegistration<Lazy<T>> {
-  final Future<Lazy<T>> Function(Map<String, dynamic> namedArgs) _factory;
-
-  LazyFactoryRegistration({
-    required Future<Lazy<T>> Function(Map<String, dynamic>) factory,
-    required super.interfaces,
-    required super.name,
-    required super.key,
-    required super.environment,
-  }) : _factory = factory;
-
-  @override
-  Future<Lazy<T>> resolve(Map<String, dynamic> namedArgs) {
-    return _factory(namedArgs);
-  }
-}
