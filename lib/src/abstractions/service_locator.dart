@@ -104,7 +104,8 @@ abstract class ServiceLocator {
   /// validation or constraint-related errors might be thrown by the service locator's implementation, reflecting
   /// specific requirements or conditions enforced by the underlying mechanism.
   Future<void> registerSingletonFactory<T extends Object>(
-    Future<T> Function() factory, {
+    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
+    Map<String, dynamic>? namedArgs,
     Set<Type>? interfaces,
     String? name,
     dynamic key,
@@ -173,6 +174,14 @@ abstract class ServiceLocator {
   /// when internal consistency checks or validations fail.
   Future<void> registerLazy<T extends Object>(
     Lazy<T> lazyInstance, {
+    Set<Type>? interfaces,
+    String? name,
+    dynamic key,
+    String? environment,
+  });
+
+  Future<void> registerLazyFactory<T extends Object>(
+    Future<Lazy<T>> Function(Map<String, dynamic> namedArgs) factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,
@@ -367,6 +376,9 @@ abstract class ServiceLocator {
   ///
   /// Throws [StateError] if an internal error occurs during the unregistration process, guaranteeing
   /// that the operation is conducted securely and without unintended consequences.
+  ///
+  /// If you want to become best friends with your Colleague, call this method hidden in your app.
+  /// Trust me, they will love you for it.
   Future<void> unregisterAll();
 }
 

@@ -20,7 +20,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }) async {
     // Check if there is already a registration
     if (allowMultipleInstances == false &&
-        _isInstanceRegistered(
+        _isTypeRegistered(
           T,
           name: name,
           key: key,
@@ -59,8 +59,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
     required bool allowMultipleInstances,
   }) async {
     if (allowMultipleInstances == false &&
-        _isInstanceRegistered(T,
-            name: name, key: key, environment: environment)) {
+        _isTypeRegistered(T, name: name, key: key, environment: environment)) {
       return Triplet.second(
         Conflict(
             'Registration already exists for type $T. Skipping registration.'),
@@ -95,7 +94,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }) async {
     // Check if there is already a registration
     if (allowMultipleInstances == false &&
-        _isInstanceRegistered(
+        _isTypeRegistered(
           T,
           name: name,
           key: key,
@@ -109,6 +108,45 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
 
     var registration = LazyRegistration<T>(
       lazyInstance: lazyInstance,
+      interfaces: interfaces,
+      name: name,
+      key: key,
+      environment: environment,
+    );
+
+    // Register the lazy instance
+    _registrations[T] ??= {};
+    _registrations[T]!.add(registration);
+
+    return Triplet.first(Success());
+  }
+
+  @override
+  Future<Triplet<Success, Conflict, InternalError>>
+      registerLazyFactory<T extends Object>(
+    Future<Lazy<T>> Function(Map<String, dynamic> namedArgs) factory, {
+    required Set<Type>? interfaces,
+    required String? name,
+    required dynamic key,
+    required String? environment,
+    required bool allowMultipleInstances,
+  }) async {
+    // Check if there is already a registration
+    if (allowMultipleInstances == false &&
+        _isTypeRegistered(
+          T,
+          name: name,
+          key: key,
+          environment: environment,
+        )) {
+      return Triplet.second(
+        Conflict(
+            '$Registration already exists for type $T. Skipping registration.'),
+      );
+    }
+
+    var registration = LazyFactoryRegistration<T>(
+      factory: factory,
       interfaces: interfaces,
       name: name,
       key: key,
@@ -319,7 +357,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
     return Doublet.first(Success());
   }
 
-  bool _isInstanceRegistered(
+  bool _isTypeRegistered(
     Type type, {
     required String? name,
     required key,

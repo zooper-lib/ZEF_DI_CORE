@@ -49,14 +49,15 @@ class InternalServiceLocator implements ServiceLocator {
 
   @override
   Future<void> registerSingletonFactory<T extends Object>(
-    Future<T> Function() factory, {
+    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
+    Map<String, dynamic>? namedArgs,
     Set<Type>? interfaces,
     String? name,
     dynamic key,
     String? environment,
   }) async {
     // Resolve the Singleton
-    final instance = await factory();
+    final instance = await factory(namedArgs ?? {});
 
     return await registerSingleton(
       instance,
@@ -110,6 +111,39 @@ class InternalServiceLocator implements ServiceLocator {
   }) async {
     final response = await _adapter.registerLazy<T>(
       lazyInstance,
+      interfaces: interfaces,
+      name: name,
+      key: key,
+      environment: environment,
+      allowMultipleInstances: _config.allowMultipleInstances,
+    );
+
+    // On conflict
+    if (response.isSecond) {
+      if (_config.throwErrors) {
+        throw StateError(registrationAlreadyExistsForType(T));
+      } else {
+        Logger.I.warning(message: registrationAlreadyExistsForType(T));
+        return;
+      }
+    }
+
+    // On internal error
+    if (response.isThird) {
+      throw StateError(internalErrorOccurred(response.third.message));
+    }
+  }
+
+  @override
+  Future<void> registerLazyFactory<T extends Object>(
+    Future<Lazy<T>> Function(Map<String, dynamic> namedArgs) factory, {
+    Set<Type>? interfaces,
+    String? name,
+    dynamic key,
+    String? environment,
+  }) async {
+    final response = await _adapter.registerLazyFactory<T>(
+      factory,
       interfaces: interfaces,
       name: name,
       key: key,
