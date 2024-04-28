@@ -1,0 +1,50 @@
+name: PR Workflow
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  pr_workflow:
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_NAME: zef_di_core
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1.2
+        with:
+          sdk: stable
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Check if version is published on pub.dev
+        run: |
+          PACKAGE_NAME="${{ env.PROJECT_NAME }}"
+          EXPECTED_VERSION=$(grep 'version:' pubspec.yaml | cut -d ' ' -f 2)
+          echo "Expected package version: $EXPECTED_VERSION"
+          LATEST_PUBLISHED_VERSION=$(curl -s https://pub.dev/packages/$PACKAGE_NAME | grep 'data-version="' | head -1 | sed -n 's/.*data-version="\([^"]*\)".*/\1/p')
+          echo "Latest published version on pub.dev: $LATEST_PUBLISHED_VERSION"
+          if [ "$EXPECTED_VERSION" = "$LATEST_PUBLISHED_VERSION" ]; then
+            echo "::error::Version $EXPECTED_VERSION is already published on pub.dev."
+            exit 1
+          else
+            echo "Version $EXPECTED_VERSION is not published on pub.dev. Proceeding..."
+          fi
+
+      - name: Run dart analyze
+        run: dart analyze
+
+      - name: Run tests if test files exist
+        run: |
+          if compgen -G "test/*_test.dart" > /dev/null; then
+            dart test
+          else
+            echo "No test files found in test/"
+          fi
+        shell: bash
