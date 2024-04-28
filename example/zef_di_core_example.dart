@@ -21,7 +21,7 @@ void main() async {
 
   // Register a Transient
   await ServiceLocator.I.registerTransient(
-    (namedArgs) async => Whale(),
+    (args) async => Whale(),
   );
 
   // Retrieve the Singleton

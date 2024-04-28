@@ -16,52 +16,52 @@ void main() {
   group('Concrete Resolution', () {
     test('Single Interface | Should Resolve', () async {
       // Arrange
-      final instance = NoDepencenciesWithInterface();
+      final instance = InterfaceOneImplementer();
 
       // Act
       ServiceLocator.I.registerSingleton(instance, interfaces: {InterfaceOne});
 
       final resolvedInstance =
-          await ServiceLocator.I.resolve<NoDepencenciesWithInterface>();
+          await ServiceLocator.I.resolve<InterfaceOneImplementer>();
 
       // Assert
-      expect(resolvedInstance, isA<NoDepencenciesWithInterface>());
+      expect(resolvedInstance, isA<InterfaceOneImplementer>());
     });
 
     test('Not Implementing Interface | Should Resolve', () async {
       // Arrange
-      final instance = NoDepencenciesWithInterface();
+      final instance = InterfaceOneImplementer();
 
       // Act
       ServiceLocator.I.registerSingleton(instance, interfaces: {InterfaceTwo});
 
       final resolvedInstance =
-          await ServiceLocator.I.resolve<NoDepencenciesWithInterface>();
+          await ServiceLocator.I.resolve<InterfaceOneImplementer>();
 
       // Assert
-      expect(resolvedInstance, isA<NoDepencenciesWithInterface>());
+      expect(resolvedInstance, isA<InterfaceOneImplementer>());
     });
 
     test('Multiple Interfaces | Should Resolve', () async {
       // Arrange
-      final instance = NoDepencenciesWithMultipleInterfaces();
+      final instance = MultiInterfaceImplementer();
 
       // Act
       ServiceLocator.I.registerSingleton(instance,
           interfaces: {InterfaceOne, InterfaceTwo});
 
-      final resolvedInstance = await ServiceLocator.I
-          .resolve<NoDepencenciesWithMultipleInterfaces>();
+      final resolvedInstance =
+          await ServiceLocator.I.resolve<MultiInterfaceImplementer>();
 
       // Assert
-      expect(resolvedInstance, isA<NoDepencenciesWithMultipleInterfaces>());
+      expect(resolvedInstance, isA<MultiInterfaceImplementer>());
     });
   });
 
   group('Interface Resolution', () {
     test('Single Interface | Should Resolve', () async {
       // Arrange
-      final instance = NoDepencenciesWithInterface();
+      final instance = InterfaceOneImplementer();
 
       // Act
       ServiceLocator.I.registerSingleton(instance, interfaces: {InterfaceOne});
@@ -69,12 +69,12 @@ void main() {
       final resolvedInstance = await ServiceLocator.I.resolve<InterfaceOne>();
 
       // Assert
-      expect(resolvedInstance, isA<NoDepencenciesWithInterface>());
+      expect(resolvedInstance, isA<InterfaceOneImplementer>());
     });
 
-    test('Not Implementing Interface | Should Not Resolve', () async {
+    test('Not Implementing Interface | Should Throw StateError', () async {
       // Arrange
-      final instance = NoDepencenciesWithInterface();
+      final instance = InterfaceOneImplementer();
 
       // Act
       ServiceLocator.I.registerSingleton(instance, interfaces: {InterfaceTwo});
@@ -88,7 +88,7 @@ void main() {
 
     test('Not Implementing Interface | Should Throw Error', () async {
       // Arrange
-      final instance = NoDepencenciesWithInterface();
+      final instance = InterfaceOneImplementer();
 
       // Act
       ServiceLocator.I.registerSingleton(instance, interfaces: {InterfaceOne});
@@ -100,7 +100,7 @@ void main() {
 
     test('Multiple Interfaces | Should Resolve', () async {
       // Arrange
-      final instance = NoDepencenciesWithMultipleInterfaces();
+      final instance = MultiInterfaceImplementer();
 
       // Act
       ServiceLocator.I.registerSingleton(instance,
@@ -109,14 +109,14 @@ void main() {
       final resolvedInstance = await ServiceLocator.I.resolve<InterfaceOne>();
 
       // Assert
-      expect(resolvedInstance, isA<NoDepencenciesWithMultipleInterfaces>());
+      expect(resolvedInstance, isA<MultiInterfaceImplementer>());
     });
 
     test('Multiple Registered Concretes | Should Resolve All By Interface',
         () async {
       // Arrange
-      final instanceOne = NoDepencenciesWithMultipleInterfaces();
-      final instanceTwo = NoDepencenciesWithMultipleInterfaces();
+      final instanceOne = MultiInterfaceImplementer();
+      final instanceTwo = MultiInterfaceImplementer();
 
       // Act
       ServiceLocator.I.registerSingleton(instanceOne,
@@ -136,8 +136,8 @@ void main() {
 
     test('Multiple Registered Interfaces | Should Resolve Correct', () async {
       // Arrange
-      final instanceOne = NoDepencenciesWithMultipleInterfaces();
-      final instanceTwo = NoDepencenciesWithMultipleInterfaces();
+      final instanceOne = MultiInterfaceImplementer();
+      final instanceTwo = MultiInterfaceImplementer();
 
       // Act
       ServiceLocator.I

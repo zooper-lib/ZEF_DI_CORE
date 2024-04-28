@@ -49,15 +49,15 @@ class InternalServiceLocator implements ServiceLocator {
 
   @override
   Future<void> registerSingletonFactory<T extends Object>(
-    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
-    Map<String, dynamic>? namedArgs,
+    Future<T> Function(Map<String, dynamic> args) factory, {
+    Map<String, dynamic>? args,
     Set<Type>? interfaces,
     String? name,
     dynamic key,
     String? environment,
   }) async {
     // Resolve the Singleton
-    final instance = await factory(namedArgs ?? {});
+    final instance = await factory(args ?? {});
 
     return await registerSingleton(
       instance,
@@ -70,7 +70,7 @@ class InternalServiceLocator implements ServiceLocator {
 
   @override
   Future<void> registerTransient<T extends Object>(
-    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
+    Future<T> Function(Map<String, dynamic> args) factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,
@@ -140,14 +140,14 @@ class InternalServiceLocator implements ServiceLocator {
     String? name,
     dynamic key,
     String? environment,
-    Map<String, dynamic>? namedArgs,
+    Map<String, dynamic>? args,
     bool resolveFirst = true,
   }) async {
     final response = await _adapter.resolve<T>(
       name: name,
       key: key,
       environment: environment,
-      namedArgs: namedArgs ?? {},
+      args: args ?? {},
       resolveFirst: resolveFirst,
     );
 
@@ -171,14 +171,14 @@ class InternalServiceLocator implements ServiceLocator {
     String? name,
     dynamic key,
     String? environment,
-    Map<String, dynamic>? namedArgs,
+    Map<String, dynamic>? args,
     bool resolveFirst = true,
   }) async {
     final response = await _adapter.resolve<T>(
       name: name,
       key: key,
       environment: environment,
-      namedArgs: namedArgs ?? {},
+      args: args ?? {},
       resolveFirst: resolveFirst,
     );
 
@@ -206,13 +206,13 @@ class InternalServiceLocator implements ServiceLocator {
     String? name,
     dynamic key,
     String? environment,
-    Map<String, dynamic>? namedArgs,
+    Map<String, dynamic>? args,
   }) async {
     final response = await _adapter.resolveAll<T>(
       name: name,
       key: key,
       environment: environment,
-      namedArgs: namedArgs ?? {},
+      args: args ?? {},
     );
 
     // On not found
@@ -257,7 +257,7 @@ class InternalServiceLocator implements ServiceLocator {
 
   @override
   Future<void> overrideWithTransient<T extends Object>(
-    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
+    Future<T> Function(Map<String, dynamic> args) factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,

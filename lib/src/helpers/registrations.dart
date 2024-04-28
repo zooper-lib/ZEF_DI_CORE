@@ -49,7 +49,7 @@ abstract class ParameterizedRegistration<T extends Object>
     required super.environment,
   });
 
-  Future<T> resolve(Map<String, dynamic> namedArgs);
+  Future<T> resolve(Map<String, dynamic> args);
 }
 
 class SingletonRegistration<T extends Object>
@@ -77,15 +77,15 @@ class SingletonRegistration<T extends Object>
   }
 
   @override
-  Future<T> resolve(Map<String, dynamic> namedArgs) => Future.value(_instance);
+  Future<T> resolve(Map<String, dynamic> args) => Future.value(_instance);
 }
 
 class TransientRegistration<T extends Object>
     extends ParameterizedRegistration<T> {
-  final Future<T> Function(Map<String, dynamic> namedArgs) _factory;
+  final Future<T> Function(Map<String, dynamic> args) _factory;
 
   TransientRegistration({
-    required Future<T> Function(Map<String, dynamic> namedArgs) factory,
+    required Future<T> Function(Map<String, dynamic> args) factory,
     required super.interfaces,
     required super.name,
     required super.key,
@@ -93,12 +93,12 @@ class TransientRegistration<T extends Object>
   }) : _factory = factory;
 
   @override
-  Future<T> resolve(Map<String, dynamic> namedArgs) {
-    return _factory(namedArgs);
+  Future<T> resolve(Map<String, dynamic> args) {
+    return _factory(args);
   }
 
   factory TransientRegistration.from(TransientRegistration registration,
-      Future<T> Function(Map<String, dynamic> namedArgs) newFactory) {
+      Future<T> Function(Map<String, dynamic> args) newFactory) {
     return TransientRegistration(
       factory: newFactory,
       interfaces: registration.interfaces,
@@ -124,7 +124,7 @@ class LazyRegistration<T extends Object> extends ParameterizedRegistration<T> {
   });
 
   @override
-  Future<T> resolve(Map<String, dynamic> namedArgs) async {
+  Future<T> resolve(Map<String, dynamic> args) async {
     return await Future.value(lazyInstance.value);
   }
 }

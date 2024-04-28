@@ -1,7 +1,9 @@
 ## 4.0.0
 
 - Merged `ZEF_DI_Abstractions` and `ZEF_DI_Inglue` together into this project
-- Added async version to all functions 
+- Added async version to all functions
+- Split tests in multiple files and reorganized them
+- Implemented `registerSingletonFactory` function
 
 ## 3.0.0
 

@@ -16,11 +16,11 @@ void main() {
   group('Lazy', () {
     test('Should Not Instantiate Service', () async {
       var initializationCounter = 0;
-      await ServiceLocator.I.registerLazy<NoDependencies>(
-        Lazy<NoDependencies>(
+      await ServiceLocator.I.registerLazy<SimpleService>(
+        Lazy<SimpleService>(
           factory: () {
             initializationCounter++;
-            return NoDependencies();
+            return SimpleService();
           },
         ),
       );
@@ -30,47 +30,47 @@ void main() {
 
     test('Instantiate Service Once', () async {
       var initializationCounter = 0;
-      await ServiceLocator.I.registerLazy<NoDependencies>(
-        Lazy<NoDependencies>(
+      await ServiceLocator.I.registerLazy<SimpleService>(
+        Lazy<SimpleService>(
           factory: () {
             initializationCounter++;
-            return NoDependencies();
+            return SimpleService();
           },
         ),
       );
 
-      await ServiceLocator.I.resolve<NoDependencies>();
+      await ServiceLocator.I.resolve<SimpleService>();
       expect(initializationCounter, 1);
     });
 
     test('Should Re-Instantiate Service', () async {
       var initializationCounter = 0;
-      await ServiceLocator.I.registerLazy<NoDependencies>(Lazy<NoDependencies>(
+      await ServiceLocator.I.registerLazy<SimpleService>(Lazy<SimpleService>(
         factory: () {
           initializationCounter++;
-          return NoDependencies();
+          return SimpleService();
         },
         expiryDuration: Duration(milliseconds: 100),
       ));
 
-      await ServiceLocator.I.resolve<NoDependencies>();
+      await ServiceLocator.I.resolve<SimpleService>();
       await Future.delayed(Duration(milliseconds: 150));
-      await ServiceLocator.I.resolve<NoDependencies>();
+      await ServiceLocator.I.resolve<SimpleService>();
 
       expect(initializationCounter, 2);
     });
 
     test('Should Throw StateError', () async {
-      expect(() async => await ServiceLocator.I.resolve<NoDependencies>(),
+      expect(() async => await ServiceLocator.I.resolve<SimpleService>(),
           throwsA(isA<StateError>()));
     });
 
     test('Should Return Same Initialized Instance', () async {
-      var lazyService = Lazy<NoDependencies>(factory: () => NoDependencies());
-      await ServiceLocator.I.registerLazy<NoDependencies>(lazyService);
+      var lazyService = Lazy<SimpleService>(factory: () => SimpleService());
+      await ServiceLocator.I.registerLazy<SimpleService>(lazyService);
 
-      var firstInstance = await ServiceLocator.I.resolve<NoDependencies>();
-      var secondInstance = await ServiceLocator.I.resolve<NoDependencies>();
+      var firstInstance = await ServiceLocator.I.resolve<SimpleService>();
+      var secondInstance = await ServiceLocator.I.resolve<SimpleService>();
 
       expect(firstInstance, same(secondInstance),
           reason:
@@ -78,39 +78,40 @@ void main() {
     });
 
     test('Should Inject Dependencies', () async {
-      var lazyWithDependency = Lazy<OneDependency>(
-        factory: () async => OneDependency(
-          await ServiceLocator.I.resolve<NoDependencies>(),
+      var lazyWithDependency = Lazy<ServiceWithDependency>(
+        factory: () async => ServiceWithDependency(
+          await ServiceLocator.I.resolve<SimpleService>(),
         ),
       );
-      await ServiceLocator.I.registerLazy<NoDependencies>(
-          Lazy<NoDependencies>(factory: () => NoDependencies()));
-      await ServiceLocator.I.registerLazy<OneDependency>(lazyWithDependency);
+      await ServiceLocator.I.registerLazy<SimpleService>(
+          Lazy<SimpleService>(factory: () => SimpleService()));
+      await ServiceLocator.I
+          .registerLazy<ServiceWithDependency>(lazyWithDependency);
 
       var oneDependencyInstance =
-          await ServiceLocator.I.resolve<OneDependency>();
+          await ServiceLocator.I.resolve<ServiceWithDependency>();
       expect(oneDependencyInstance, isNotNull);
       expect(oneDependencyInstance.noDependencies, isNotNull);
     });
 
     test('Manual Reset | Should Re-Initialize Service', () async {
       var initializationCounter = 0;
-      var lazyService = Lazy<NoDependencies>(factory: () {
+      var lazyService = Lazy<SimpleService>(factory: () {
         initializationCounter++;
-        return NoDependencies();
+        return SimpleService();
       });
 
-      await ServiceLocator.I.registerLazy<NoDependencies>(lazyService);
+      await ServiceLocator.I.registerLazy<SimpleService>(lazyService);
 
       // First resolve to initialize the service
-      await ServiceLocator.I.resolve<NoDependencies>();
+      await ServiceLocator.I.resolve<SimpleService>();
       expect(initializationCounter, 1);
 
       // Manually reset or re-initialize the service here
       lazyService.reset();
 
       // Resolve again and expect the service to re-initialize
-      await ServiceLocator.I.resolve<NoDependencies>();
+      await ServiceLocator.I.resolve<SimpleService>();
       expect(initializationCounter, 2,
           reason: 'Service should be re-initialized after manual reset.');
     });

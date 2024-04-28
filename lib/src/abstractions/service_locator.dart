@@ -87,6 +87,9 @@ abstract class ServiceLocator {
   ///   This function encapsulates the custom logic for creating the singleton instance, leveraging the [ServiceLocator]
   ///   for any necessary dependency resolution. This approach facilitates complex initialization scenarios where
   ///   the instantiation of [T] might depend on other services or configurations managed by the service locator.
+  /// - [args]: Optional. A map of arguments that can be passed to the factory function to influence the instantiation
+  ///   of the service. This allows for more flexible and context-specific service creation, accommodating various
+  ///   dependencies or configuration values needed at runtime.
   /// - [interfaces]: An optional `Set` of types that the singleton is expected to implement. This allows the singleton
   ///   to be resolved by these interface types as well, promoting a design that favors abstraction over concrete
   ///   implementations.
@@ -104,8 +107,8 @@ abstract class ServiceLocator {
   /// validation or constraint-related errors might be thrown by the service locator's implementation, reflecting
   /// specific requirements or conditions enforced by the underlying mechanism.
   Future<void> registerSingletonFactory<T extends Object>(
-    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
-    Map<String, dynamic>? namedArgs,
+    Future<T> Function(Map<String, dynamic> args) factory, {
+    Map<String, dynamic>? args,
     Set<Type>? interfaces,
     String? name,
     dynamic key,
@@ -121,7 +124,7 @@ abstract class ServiceLocator {
   ///
   /// - [factory]: A callback function that is invoked by the service locator to create an instance
   ///   of type [T]. This function can utilize the service locator for resolving dependencies
-  ///   and may also use named arguments [namedArgs] passed during resolution for further customization.
+  ///   and may also use named arguments [args] passed during resolution for further customization.
   /// - [interfaces]: An optional `Set` of interfaces or abstract classes that the created instances
   ///   are expected to implement. This allows instances to be resolved by their interface types,
   ///   promoting loose coupling and enhancing the flexibility of your application's architecture.
@@ -140,7 +143,7 @@ abstract class ServiceLocator {
   /// Additional errors may be encountered based on the service locator's underlying implementation,
   /// particularly if internal validation fails or if there are issues during the resolution process.
   Future<void> registerTransient<T extends Object>(
-    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
+    Future<T> Function(Map<String, dynamic> args) factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,
@@ -173,7 +176,7 @@ abstract class ServiceLocator {
   /// Further errors may be thrown depending on the underlying service locator's implementation, especially
   /// when internal consistency checks or validations fail.
   ///
-  ///* NOTE: As of now there is no way to pass namedArgs to the factory method of a Lazy registration.
+  ///* NOTE: As of now there is no way to pass args to the factory method of a Lazy registration.
   Future<void> registerLazy<T extends Object>(
     Lazy<T> lazyInstance, {
     Set<Type>? interfaces,
@@ -188,7 +191,7 @@ abstract class ServiceLocator {
   /// - `name`: An optional name to filter the instances by their registered name.
   /// - `key`: An optional key to further refine the filtering of instances.
   /// - `environment`: An optional environment tag to filter instances available in the specified environment.
-  /// - `namedArgs`: Optional. A map of named arguments that can be passed to the factory function to influence the instantiation
+  /// - `args`: Optional. A map of named arguments that can be passed to the factory function to influence the instantiation
   ///                of the service. This allows for more flexible and context-specific service creation, accommodating various
   ///                dependencies or configuration values needed at runtime.
   ///
@@ -199,7 +202,7 @@ abstract class ServiceLocator {
     String? name,
     dynamic key,
     String? environment,
-    Map<String, dynamic>? namedArgs,
+    Map<String, dynamic>? args,
     bool resolveFirst = true,
   });
 
@@ -220,7 +223,7 @@ abstract class ServiceLocator {
   ///   scenarios where type and name alone do not suffice for uniquely identifying a service.
   /// - [environment]: An optional tag that restricts resolution to services registered for a specific
   ///   runtime environment, facilitating environment-specific configurations.
-  /// - [namedArgs]: An optional map of named arguments that can be passed to a factory method upon
+  /// - [args]: An optional map of named arguments that can be passed to a factory method upon
   ///   resolution. This allows for the creation of instances with specific configurations or dependencies
   ///   that are determined at runtime, enhancing the flexibility of service instantiation.
   /// - [resolveFirst]: A flag indicating whether to resolve the first matching instance or not. By default,
@@ -237,7 +240,7 @@ abstract class ServiceLocator {
     String? name,
     dynamic key,
     String? environment,
-    Map<String, dynamic>? namedArgs,
+    Map<String, dynamic>? args,
   });
 
   /// Asynchronously attempts to resolve an instance of type `T` based on the specified criteria, returning `null` if no match is found.
@@ -255,7 +258,7 @@ abstract class ServiceLocator {
   /// - [environment]: An optional tag that limits resolution to services associated with a specific runtime
   ///   environment, facilitating the configuration of services tailored to different contexts or stages of
   ///   deployment.
-  /// - [namedArgs]: An optional map of named arguments that, if provided, are passed to the factory method
+  /// - [args]: An optional map of named arguments that, if provided, are passed to the factory method
   ///   responsible for creating the instance. This enables dynamic configuration of services at the point of
   ///   resolution, allowing for a high degree of customization based on runtime conditions.
   ///
@@ -271,7 +274,7 @@ abstract class ServiceLocator {
     String? name,
     dynamic key,
     String? environment,
-    Map<String, dynamic>? namedArgs,
+    Map<String, dynamic>? args,
   });
 
   /// Asynchronously Overrides an existing registration with a new `Singleton`.
@@ -312,7 +315,7 @@ abstract class ServiceLocator {
   /// trying to override a non-existent factory registration, to ensure consistent and error-free
   /// service registration.
   Future<void> overrideWithTransient<T extends Object>(
-    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
+    Future<T> Function(Map<String, dynamic> args) factory, {
     Set<Type>? interfaces,
     String? name,
     dynamic key,

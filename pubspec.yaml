@@ -28,6 +28,3 @@ dev_dependencies:
 
   # Used for better lints
   very_good_analysis: ^5.1.0
-
-  # Used for mocking dependencies
-  mockito: ^5.4.4

@@ -51,7 +51,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   @override
   Future<Triplet<Success, Conflict, InternalError>>
       registerTransient<T extends Object>(
-    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
+    Future<T> Function(Map<String, dynamic> args) factory, {
     required Set<Type>? interfaces,
     required String? name,
     required dynamic key,
@@ -126,7 +126,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
     required String? name,
     required key,
     required String? environment,
-    required Map<String, dynamic> namedArgs,
+    required Map<String, dynamic> args,
     required bool resolveFirst,
   }) async {
     // Filter the registrations
@@ -145,7 +145,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
     final registration = matchedRegistrations.first;
 
     // Create the instance based on the type of registration
-    final instance = await _resolveRegistration<T>(registration, namedArgs);
+    final instance = await _resolveRegistration<T>(registration, args);
 
     return Triplet.first(instance);
   }
@@ -156,7 +156,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
     required String? name,
     required key,
     required String? environment,
-    required Map<String, dynamic> namedArgs,
+    required Map<String, dynamic> args,
   }) async {
     // Filter the registrations
     var matchedRegistrations = _filterRegistrations<T>(
@@ -178,7 +178,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
           final instance = await registration.resolve();
           resolvedInstances.add(instance);
         case ParameterizedRegistration<T>():
-          final instance = await registration.resolve(namedArgs);
+          final instance = await registration.resolve(args);
           resolvedInstances.add(instance);
         default:
           throw Exception("Unsupported registration type for $T");
@@ -227,7 +227,7 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   @override
   Future<Doublet<Success, InternalError>>
       overrideWithTransient<T extends Object>(
-    Future<T> Function(Map<String, dynamic> namedArgs) factory, {
+    Future<T> Function(Map<String, dynamic> args) factory, {
     required Set<Type>? interfaces,
     required String? name,
     required key,
@@ -401,12 +401,12 @@ class InternalServiceLocatorAdapter implements ServiceLocatorAdapter {
   }
 
   Future<T> _resolveRegistration<T extends Object>(
-      Registration<T> registration, Map<String, dynamic> namedArgs) async {
+      Registration<T> registration, Map<String, dynamic> args) async {
     switch (registration) {
       case BasicRegistration<T>():
         return await registration.resolve();
       case ParameterizedRegistration<T>():
-        return await registration.resolve(namedArgs);
+        return await registration.resolve(args);
       default:
         throw Exception("Unsupported registration type for $T");
     }

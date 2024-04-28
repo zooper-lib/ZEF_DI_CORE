@@ -1,63 +1,73 @@
 // ignore_for_file: unused_field
 
-class NoDependencies {
-  const NoDependencies();
+/// A class with no dependencies
+class SimpleService {
+  const SimpleService();
 }
 
-class OneDependency {
-  final NoDependencies noDependencies;
+/// A class with one dependency
+class ServiceWithDependency {
+  final SimpleService noDependencies;
 
-  OneDependency(this.noDependencies);
+  ServiceWithDependency(this.noDependencies);
 }
 
-class TwoDependencies {
-  final NoDependencies _noDependencies;
-  final OneDependency _oneDependency;
+/// A class with two dependencies
+class ServiceWithTwoDependencies {
+  final SimpleService _noDependencies;
+  final ServiceWithDependency _oneDependency;
 
-  TwoDependencies(this._noDependencies, this._oneDependency);
+  ServiceWithTwoDependencies(
+    this._noDependencies,
+    this._oneDependency,
+  );
 }
 
-class NamedArgs {
+/// A class with a parameterized constructor
+class ParameterizedService {
   final String name;
   final int age;
 
-  NamedArgs({
+  ParameterizedService({
     required this.name,
     required this.age,
   });
 }
 
-class NamedArgsWrapper {
-  final NamedArgs namedArgs;
+/// A class with a dependency that has a parameterized constructor
+class WrapperService {
+  final ParameterizedService args;
 
-  NamedArgsWrapper(this.namedArgs);
+  WrapperService(this.args);
 }
 
 abstract class InterfaceOne {}
 
 abstract class InterfaceTwo {}
 
-class NoDepencenciesWithInterface implements InterfaceOne {
-  const NoDepencenciesWithInterface();
+/// A class that implements an interface
+class InterfaceOneImplementer implements InterfaceOne {
+  const InterfaceOneImplementer();
 }
 
-class NoDepencenciesWithMultipleInterfaces
-    implements InterfaceOne, InterfaceTwo {
-  const NoDepencenciesWithMultipleInterfaces();
+/// A class that implements two interfaces
+class MultiInterfaceImplementer implements InterfaceOne, InterfaceTwo {
+  const MultiInterfaceImplementer();
 }
 
-class OneDependencyWithMultipleInterfaces
-    implements InterfaceOne, InterfaceTwo {
-  final NoDepencenciesWithMultipleInterfaces _noDepencenciesWithInterfaces;
+/// A class that implements two interfaces and has a dependency
+class DependentMultiInterfaceService implements InterfaceOne, InterfaceTwo {
+  final MultiInterfaceImplementer dependency;
 
-  OneDependencyWithMultipleInterfaces(this._noDepencenciesWithInterfaces);
+  DependentMultiInterfaceService(this.dependency);
 }
 
-class NamedArgsWithMultipleInterfaces implements InterfaceOne, InterfaceTwo {
+/// A class that implements two interfaces and has a parameterized constructor
+class ParameterizedMultiInterfaceService implements InterfaceOne, InterfaceTwo {
   final String name;
   final int age;
 
-  NamedArgsWithMultipleInterfaces({
+  ParameterizedMultiInterfaceService({
     required this.name,
     required this.age,
   });

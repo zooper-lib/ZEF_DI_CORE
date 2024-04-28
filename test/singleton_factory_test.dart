@@ -16,11 +16,11 @@ void main() {
   group('Registration', () {
     test('Should Register', () async {
       // Arrange
-      final instance = SimpleService();
+      factory(args) async => SimpleService();
 
       // Assert
       expect(
-        () async => await ServiceLocator.I.registerSingleton(instance),
+        () async => await ServiceLocator.I.registerSingletonFactory(factory),
         returnsNormally,
       );
     });
@@ -29,14 +29,14 @@ void main() {
   group('Resolution', () {
     test('Should Resolve', () async {
       // Arrange
-      final instance = SimpleService();
-      await ServiceLocator.I.registerSingleton(instance);
+      factory(args) async => SimpleService();
+      await ServiceLocator.I.registerSingletonFactory(factory);
 
       // Act
-      final resolvedInstance = await ServiceLocator.I.resolve<SimpleService>();
+      final instance = await ServiceLocator.I.resolve<SimpleService>();
 
       // Assert
-      expect(resolvedInstance, isA<SimpleService>());
+      expect(instance, isA<SimpleService>());
     });
   });
 }

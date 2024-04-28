@@ -22,13 +22,14 @@ void main() {
 
       // Act
       await ServiceLocator.I.registerTransient(
-        (namedArgs) async => NamedArgs(
-          name: namedArgs['name'],
-          age: namedArgs['age'],
+        (args) async => ParameterizedService(
+          name: args['name'],
+          age: args['age'],
         ),
       );
-      final resolvedInstance = await ServiceLocator.I.resolve<NamedArgs>(
-        namedArgs: {
+      final resolvedInstance =
+          await ServiceLocator.I.resolve<ParameterizedService>(
+        args: {
           'name': name,
           'age': age,
         },
@@ -46,28 +47,28 @@ void main() {
 
       // Act
       await ServiceLocator.I.registerTransient(
-        (namedArgs) async => NamedArgs(
-          name: namedArgs['name'],
-          age: namedArgs['age'],
+        (args) async => ParameterizedService(
+          name: args['name'],
+          age: args['age'],
         ),
       );
       await ServiceLocator.I.registerTransient(
-        (namedArgs) async => NamedArgsWrapper(
-          await ServiceLocator.I.resolve<NamedArgs>(
-            namedArgs: namedArgs,
+        (args) async => WrapperService(
+          await ServiceLocator.I.resolve<ParameterizedService>(
+            args: args,
           ),
         ),
       );
-      final resolvedInstance = await ServiceLocator.I.resolve<NamedArgsWrapper>(
-        namedArgs: {
+      final resolvedInstance = await ServiceLocator.I.resolve<WrapperService>(
+        args: {
           'name': name,
           'age': age,
         },
       );
 
       // Assert
-      expect(resolvedInstance.namedArgs.name, name);
-      expect(resolvedInstance.namedArgs.age, age);
+      expect(resolvedInstance.args.name, name);
+      expect(resolvedInstance.args.age, age);
     });
   });
 
@@ -79,16 +80,17 @@ void main() {
 
       // Act
       await ServiceLocator.I.registerSingletonFactory(
-        (namedArgs) async => NamedArgs(
-          name: namedArgs['name'],
-          age: namedArgs['age'],
+        (args) async => ParameterizedService(
+          name: args['name'],
+          age: args['age'],
         ),
-        namedArgs: {
+        args: {
           'name': name,
           'age': age,
         },
       );
-      final resolvedInstance = await ServiceLocator.I.resolve<NamedArgs>();
+      final resolvedInstance =
+          await ServiceLocator.I.resolve<ParameterizedService>();
 
       // Assert
       expect(resolvedInstance.name, name);
@@ -102,26 +104,25 @@ void main() {
 
       // Act
       await ServiceLocator.I.registerSingletonFactory(
-        (namedArgs) async => NamedArgs(
-          name: namedArgs['name'],
-          age: namedArgs['age'],
+        (args) async => ParameterizedService(
+          name: args['name'],
+          age: args['age'],
         ),
-        namedArgs: {
+        args: {
           'name': name,
           'age': age,
         },
       );
       await ServiceLocator.I.registerSingletonFactory(
-        (namedArgs) async => NamedArgsWrapper(
-          await ServiceLocator.I.resolve<NamedArgs>(),
+        (args) async => WrapperService(
+          await ServiceLocator.I.resolve<ParameterizedService>(),
         ),
       );
-      final resolvedInstance =
-          await ServiceLocator.I.resolve<NamedArgsWrapper>();
+      final resolvedInstance = await ServiceLocator.I.resolve<WrapperService>();
 
       // Assert
-      expect(resolvedInstance.namedArgs.name, name);
-      expect(resolvedInstance.namedArgs.age, age);
+      expect(resolvedInstance.args.name, name);
+      expect(resolvedInstance.args.age, age);
     });
   });
 
@@ -131,8 +132,8 @@ void main() {
       final String name = 'John Doe';
       final int age = 10;
       await ServiceLocator.I.registerLazy(
-        Lazy<NamedArgs>(
-          factory: () => NamedArgs(
+        Lazy<ParameterizedService>(
+          factory: () => ParameterizedService(
             name: name,
             age: age,
           ),
@@ -140,7 +141,8 @@ void main() {
       );
 
       // Act
-      final resolvedInstance = await ServiceLocator.I.resolve<NamedArgs>();
+      final resolvedInstance =
+          await ServiceLocator.I.resolve<ParameterizedService>();
 
       // Assert
       expect(resolvedInstance.name, name);
@@ -152,28 +154,27 @@ void main() {
       final String name = 'John Doe';
       final int age = 10;
       await ServiceLocator.I.registerLazy(
-        Lazy<NamedArgs>(
-          factory: () => NamedArgs(
+        Lazy<ParameterizedService>(
+          factory: () => ParameterizedService(
             name: name,
             age: age,
           ),
         ),
       );
       await ServiceLocator.I.registerLazy(
-        Lazy<NamedArgsWrapper>(
-          factory: () async => NamedArgsWrapper(
-            await ServiceLocator.I.resolve<NamedArgs>(),
+        Lazy<WrapperService>(
+          factory: () async => WrapperService(
+            await ServiceLocator.I.resolve<ParameterizedService>(),
           ),
         ),
       );
 
       // Act
-      final resolvedInstance =
-          await ServiceLocator.I.resolve<NamedArgsWrapper>();
+      final resolvedInstance = await ServiceLocator.I.resolve<WrapperService>();
 
       // Assert
-      expect(resolvedInstance.namedArgs.name, name);
-      expect(resolvedInstance.namedArgs.age, age);
+      expect(resolvedInstance.args.name, name);
+      expect(resolvedInstance.args.age, age);
     });
   });
 }
