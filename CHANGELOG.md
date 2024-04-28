@@ -1,5 +1,6 @@
 ## 4.0.0
 
+- Renamed project
 - Merged `ZEF_DI_Abstractions` and `ZEF_DI_Inglue` together into this project
 - Added async version to all functions
 - Split tests in multiple files and reorganized them
