@@ -187,13 +187,15 @@ abstract class ServiceLocator {
 
   /// Asynchronously resolves the first registered instance of type `T` that matches the given criteria.
   ///
-  /// - `interface`: An optional interface type to filter the instances by the interface they implement.
-  /// - `name`: An optional name to filter the instances by their registered name.
-  /// - `key`: An optional key to further refine the filtering of instances.
-  /// - `environment`: An optional environment tag to filter instances available in the specified environment.
-  /// - `args`: Optional. A map of named arguments that can be passed to the factory function to influence the instantiation
+  /// - [interface]: An optional interface type to filter the instances by the interface they implement.
+  /// - [name]: An optional name to filter the instances by their registered name.
+  /// - [key]: An optional key to further refine the filtering of instances.
+  /// - [environment]: An optional environment tag to filter instances available in the specified environment.
+  /// - [args]: Optional. A map of named arguments that can be passed to the factory function to influence the instantiation
   ///                of the service. This allows for more flexible and context-specific service creation, accommodating various
   ///                dependencies or configuration values needed at runtime.
+  /// - [resolveFirst]: A flag indicating whether to resolve the first matching instance or not. By default,
+  ///   this is set to `true`, meaning the method will return the first service that matches the given criteria.
   ///
   /// Throws [StateError] if no matching instance is found.
   /// Note: It does not consider the settings of the [ServiceLocatorConfig.throwErrors].
@@ -245,7 +247,7 @@ abstract class ServiceLocator {
 
   /// Asynchronously attempts to resolve an instance of type `T` based on the specified criteria, returning `null` if no match is found.
   ///
-  /// This method functions similarly to [resolveSync] but is designed to return `null` instead of throwing an
+  /// This method functions similarly to [resolve] but is designed to return `null` instead of throwing an
   /// exception when no matching instance is found. This can be useful in scenarios where the absence of a
   /// service is an acceptable condition and can be gracefully handled within the application logic.
   ///
@@ -262,7 +264,7 @@ abstract class ServiceLocator {
   ///   responsible for creating the instance. This enables dynamic configuration of services at the point of
   ///   resolution, allowing for a high degree of customization based on runtime conditions.
   ///
-  /// In contrast to [resolveSync], this method does not throw a [StateError] when no matching instance is found,
+  /// In contrast to [resolve], this method does not throw a [StateError] when no matching instance is found,
   /// making it suitable for cases where the non-existence of a service is a handled scenario rather than an
   /// exceptional condition. However, if the service locator's configuration is set to throw errors for missing
   /// registrations, a [StateError] may still be thrown, reflecting the locator's configuration.
