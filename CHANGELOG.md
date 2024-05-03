@@ -1,3 +1,7 @@
+## 5.0.0
+
+- Added new annotations which will result in a major update of the generator
+
 ## 4.0.0
 
 - Renamed project

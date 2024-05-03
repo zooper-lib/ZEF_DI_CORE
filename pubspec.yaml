@@ -1,6 +1,6 @@
 name: zef_di_core
 description: A dart library which provides abstractions for dependency injection.
-version: 4.0.0
+version: 5.0.0
 repository: https://github.com/zooper-lib/ZEF_DI_Core
 topics:
   - dependency-injection

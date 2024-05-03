@@ -9,6 +9,7 @@ This project is the continuation of [zef_di_abstractions](https://pub.dev/packag
 - **Framework Agnostic**: Designed to be a flexible wrapper, this package can be used with any Dependency Injection (DI) framework, offering a unified interface for service registration and resolution.
 - **Multiple Service Resolution**: Supports resolving multiple services registered under the same interface, enhancing the flexibility of service retrieval in complex applications.
 - **Custom Adapter Integration**: Enables users to integrate any external DI framework by writing custom adapters, ensuring compatibility and extending functionality according to project needs.
+- **Unlimited Parameters**: Different to other DI frameworks we offer the ability to pass any number of arguments when resolving a dependency.
 - **Code generation**: Automatic dependency registration and resolution.
 
 ## Definitions
